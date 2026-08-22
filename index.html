@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yenkai Huang — AI Platform PM</title>
+<meta name="description" content="I build the infrastructure AI agents actually run on: agent runtimes, sandbox isolation, and the developer platform underneath them.">
+<meta property="og:title" content="Yenkai Huang — AI Platform PM">
+<meta property="og:description" content="I build the infrastructure AI agents actually run on: agent runtimes, sandbox isolation, and the developer platform underneath them.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0e1116; --surface:#151a21; --surface-2:#1b212a;
+  --rule:#232b36; --rule-2:#2e3846;
+  --ink:#e6ebf2; --ink-2:#c6cfdb; --muted:#93a0b1; --faint:#76849a;
+  --accent:#f0b429; --accent-dim:#a8791a;
+  --maxw:860px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--ground); color:var(--ink-2);
+  line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
+a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+code,pre,.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ── Hero: one full viewport, centred, canvas behind ── */
+.hero{
+  position:relative;min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:80px 24px 96px;overflow:hidden;
+}
+#topo{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.hero-veil{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 58% 48% at 50% 44%,
+    rgba(14,17,22,.90) 0%, rgba(14,17,22,.62) 52%, rgba(14,17,22,0) 100%);
+}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:1040px;display:flex;flex-direction:column;align-items:center;gap:0}
+.hero-name{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82rem;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:22px;
+}
+.roleline{
+  font-family:'Archivo',-apple-system,Helvetica,Arial,sans-serif;
+  font-size:clamp(2rem,7.4vw,5rem);font-weight:800;letter-spacing:-.04em;
+  line-height:1.0;color:var(--ink);margin-bottom:28px;
+  display:grid;grid-template-columns:minmax(0,1fr);perspective:900px;
+}
+.roleline>.sizer,.roleline>.live{grid-area:1/1}
+.roleline>.sizer{visibility:hidden;pointer-events:none}
+.roleline>.live{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:0 .16em}
+.flip{display:inline-block;transform-origin:50% 60%;backface-visibility:hidden}
+.flip.out{animation:flipOut .3s cubic-bezier(.55,0,.85,.2) forwards}
+.flip.in{animation:flipIn .38s cubic-bezier(.2,.9,.3,1)}
+@keyframes flipOut{to{transform:rotateX(-85deg);opacity:0}}
+@keyframes flipIn{from{transform:rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+.flip::after{
+  content:"";display:inline-block;width:.42em;height:.82em;background:var(--accent);
+  margin-left:.14em;transform:translateY(.02em);animation:blink 1.15s steps(1,end) infinite;
+}
+.roleline>.sizer .flip::after{animation:none}
+@keyframes blink{0%,48%{opacity:1}49%,100%{opacity:0}}
+.hero-lede{font-size:1.12rem;color:var(--ink-2);max-width:46ch;margin-bottom:34px;text-wrap:balance}
+.hero-contact{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.8rem;color:var(--muted);
+  display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;
+}
+.hero-contact a{color:var(--muted);text-decoration-color:var(--rule-2)}
+.hero-contact a:hover{color:var(--accent)}
+.scrollcue{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--faint);text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.scrollcue:hover{color:var(--accent)}
+.scrollcue span{display:block;width:1px;height:26px;background:linear-gradient(var(--rule-2),transparent);animation:cue 2.4s ease-in-out infinite}
+@keyframes cue{0%,100%{opacity:.35;transform:scaleY(.7)}50%{opacity:1;transform:scaleY(1)}}
+
+/* ── Orchestrated entrance ── */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes settle{from{opacity:0}to{opacity:1}}
+#topo{animation:settle 1100ms ease-out both}
+.hero-inner>*{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both}
+.hero-inner>*:nth-child(1){animation-delay:120ms}
+.hero-inner>*:nth-child(2){animation-delay:250ms}
+.hero-inner>*:nth-child(3){animation-delay:400ms}
+.hero-inner>*:nth-child(4){animation-delay:530ms}
+.scrollcue{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both;animation-delay:760ms}
+
+/* ── Tabs ── */
+.tabbar{position:sticky;top:0;z-index:30;background:var(--ground);border-bottom:1px solid var(--rule)}
+.tablist{max-width:var(--maxw);margin:0 auto;padding:0 24px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tablist::-webkit-scrollbar{display:none}
+.tab{
+  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);padding:16px 13px 13px;cursor:pointer;
+  white-space:nowrap;transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* ── Panels ── */
+.panel{padding:56px 0 112px}
+.panel[hidden]{display:none}
+.lede{font-size:1.02rem;color:var(--muted);max-width:60ch;margin-bottom:40px}
+h2{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);margin:56px 0 20px;padding-bottom:10px;
+  border-bottom:1px solid var(--rule);font-weight:500;
+}
+h2:first-of-type{margin-top:0}
+h3{font-family:'Archivo',sans-serif;font-size:1.12rem;font-weight:700;color:var(--ink);letter-spacing:-.015em;margin-bottom:8px;text-wrap:balance}
+
+/* ── Work cards ── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.card{
+  display:flex;flex-direction:column;background:var(--surface);padding:26px 24px 22px;
+  text-decoration:none;color:inherit;transition:background .18s;
+}
+.card:hover{background:var(--surface-2);color:inherit}
+.card .kicker{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:12px;
+}
+.card p{font-size:.93rem;color:var(--muted);margin-bottom:14px}
+.card .metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.75rem;color:var(--ink-2);line-height:1.55;margin-bottom:14px}
+.card .metric::before{content:"→ ";color:var(--accent)}
+.card .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-top:12px}
+.more{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);flex:none}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--rule-2);color:var(--muted);font-size:.65rem;padding:2px 8px}
+
+/* ── Domain rows ── */
+.domaincards{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.dcard{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  border-bottom:1px solid var(--rule);padding:22px 4px;text-decoration:none;color:inherit;
+  transition:padding-left .18s,background .18s;
+}
+.dcard:hover{padding-left:12px;background:var(--surface);color:inherit}
+.dcard p{font-size:.9rem;color:var(--muted);margin-top:5px}
+.dcard .arrow{color:var(--accent);font-size:1.05rem;flex:none}
+
+/* ── Earlier ── */
+.earlier{padding-left:18px;border-left:1px solid var(--rule-2);margin-bottom:22px}
+.earlier .role{font-weight:600;color:var(--ink);font-size:.98rem}
+.earlier .meta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.71rem;color:var(--faint);letter-spacing:.08em;margin:3px 0 8px}
+.earlier p{font-size:.91rem;color:var(--muted)}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:8px}
+th{
+  text-align:left;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);padding:0 14px 10px 0;border-bottom:1px solid var(--rule-2);font-weight:500;
+}
+td{padding:12px 14px 12px 0;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--muted)}
+td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+.scroller{overflow-x:auto;margin-bottom:28px}
+.depth{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;white-space:nowrap}
+.d-expert{background:var(--accent);color:var(--ground);font-weight:500}
+.d-practiced{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule-2)}
+.d-familiar{background:transparent;color:var(--faint);border:1px solid var(--rule)}
+
+.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:36px}
+.rubric div{background:var(--surface);padding:18px}
+.rubric strong{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.rubric p{font-size:.85rem;color:var(--muted);margin-top:8px}
+
+/* ── For Agents ── */
+.callout{background:var(--surface);border:1px solid var(--rule);padding:24px;margin-bottom:30px}
+.callout p{font-size:.95rem;color:var(--muted)}
+.filelink{
+  display:inline-flex;align-items:center;gap:9px;margin-top:16px;background:var(--accent);color:var(--ground);
+  padding:10px 17px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.76rem;font-weight:500;text-decoration:none;
+}
+.filelink:hover{background:var(--ink);color:var(--ground)}
+.diagram{background:var(--surface);border:1px solid var(--rule);padding:24px 18px;margin-bottom:30px;overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:560px;height:auto}
+.decision{margin-bottom:24px}
+.decision p{font-size:.93rem;color:var(--muted)}
+pre{background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);padding:18px 20px;overflow-x:auto;font-size:.79rem;line-height:1.65;margin-bottom:12px}
+.note{font-size:.87rem;color:var(--muted);margin-bottom:28px;max-width:62ch}
+
+/* ── About ── */
+.about{display:flex;flex-direction:column;gap:18px}
+.about p{font-size:1rem;color:var(--ink-2);max-width:62ch}
+.edu{margin-bottom:17px}
+.edu .school{font-weight:600;color:var(--ink);font-size:.99rem}
+.edu .detail{font-size:.86rem;color:var(--muted)}
+.community{display:flex;flex-direction:column;gap:8px}
+.community li{font-size:.93rem;color:var(--muted);list-style:none;padding-left:20px;position:relative}
+.community li::before{content:"·";position:absolute;left:5px;color:var(--accent);font-weight:700}
+
+/* ── Detail pages ── */
+.backlink{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:inline-block;margin-bottom:34px}
+.backlink:hover{color:var(--accent)}
+.detail-head{padding:60px 0 10px}
+.detail-head h1{font-family:'Archivo',sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.07;color:var(--ink);margin-bottom:16px;max-width:19ch;text-wrap:balance}
+.detail-metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.83rem;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:16px;margin-top:20px;max-width:60ch}
+.detail-metric::before{content:"→ ";color:var(--accent)}
+.detail-body{padding:20px 0 104px}
+.detail-body section{margin-bottom:38px}
+.detail-body h2{border:0;margin:0 0 12px;padding:0}
+.detail-body p{font-size:1.01rem;color:var(--ink-2);max-width:64ch}
+.nextprev{border-top:1px solid var(--rule);padding-top:24px;display:flex;flex-wrap:wrap;gap:10px}
+.nextprev a{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;text-decoration:none;border:1px solid var(--rule-2);padding:10px 14px;color:var(--muted)}
+.nextprev a:hover{border-color:var(--accent);color:var(--accent)}
+
+footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;color:var(--faint)}
+
+@media (max-width:700px){
+  .hero{padding:72px 20px 88px}
+  .cards{grid-template-columns:1fr}
+  .rubric{grid-template-columns:1fr}
+  .panel{padding:40px 0 80px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  /* The entrance animates opacity 0 -> 1 with fill-mode both. Killing the
+     animation without this would leave the whole hero invisible. */
+  #topo,.hero-inner>*,.scrollcue{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <canvas id="topo" aria-hidden="true"></canvas>
+  <div class="hero-veil"></div>
+  <div class="hero-inner">
+    <div class="hero-name">Yenkai Huang</div>
+    <h1 class="roleline">
+      <span class="live sizer" aria-hidden="true"><span class="flip">AI Platform PM</span></span><span class="live sizer" aria-hidden="true"><span class="flip">Agent Infrastructure PM</span></span><span class="live sizer" aria-hidden="true"><span class="flip">Developer Platform PM</span></span><span class="live sizer" aria-hidden="true"><span class="flip">Kubernetes Platform PM</span></span><span class="live sizer" aria-hidden="true"><span class="flip">GenAI Product PM</span></span>
+      <span class="live">
+        <span class="flip" id="flip" data-roles='["AI Platform PM", "Agent Infrastructure PM", "Developer Platform PM", "Kubernetes Platform PM", "GenAI Product PM"]' aria-hidden="true">AI Platform PM</span>
+      </span>
+      <span class="sr">Yenkai Huang — AI Platform PM / Agent Infrastructure PM / Developer Platform PM / Kubernetes Platform PM / GenAI Product PM</span>
+    </h1>
+    <p class="hero-lede">I build the infrastructure AI agents actually run on: agent runtimes, sandbox isolation, and the developer platform underneath them.</p>
+    <div class="hero-contact">
+      <a href="mailto:yenkai.ykh@gmail.com">yenkai.ykh@gmail.com</a>
+      <a href="http://linkedin.com/in/yenkaihuang">linkedin.com/in/YenkaiHuang</a>
+      <span>San Francisco Bay Area</span>
+    </div>
+  </div>
+  <a class="scrollcue" href="#panel-work">Work<span></span></a>
+</section>
+
+<nav class="tabbar" aria-label="Sections">
+  <div class="tablist" role="tablist"><button role="tab" class="tab" id="tab-work" data-tab="work" aria-controls="panel-work" aria-selected="true" tabindex="0">Work</button><button role="tab" class="tab" id="tab-stack" data-tab="stack" aria-controls="panel-stack" aria-selected="false" tabindex="-1">Stack</button><button role="tab" class="tab" id="tab-agents" data-tab="agents" aria-controls="panel-agents" aria-selected="false" tabindex="-1">For Agents</button><button role="tab" class="tab" id="tab-about" data-tab="about" aria-controls="panel-about" aria-selected="false" tabindex="-1">About</button></div>
+</nav>
+
+<section role="tabpanel" class="panel wrap" id="panel-work" aria-labelledby="tab-work">
+    <p class="lede">Four problems I've owned end to end. Each one is a platform bet — what to build, what to buy, and what the market is still getting wrong. Open any of them for the full story.</p>
+    <div class="cards">
+      <a class="card" href="work/agent-runtime.html">
+        <div class="kicker">Agent Runtime &amp; Isolation</div>
+        <h3>Running untrusted agents in production</h3>
+        <p>An agent that executes code is an untrusted workload holding your credentials. Most teams solve that by not letting agents do anything interesting. We built real isolation instead.</p>
+        <div class="metric">Runs in production behind a customer-facing AI product.</div>
+        <div class="foot">
+          <div class="tags"><span class="tag">gVisor</span><span class="tag">Cilium eBPF</span><span class="tag">Kubernetes</span></div>
+          <span class="more">Read &rarr;</span>
+        </div>
+      </a>
+      <a class="card" href="work/mcp-skills.html">
+        <div class="kicker">Developer Platform</div>
+        <h3>Platform operations as agent-executable skills</h3>
+        <p>Platform teams write runbooks. Engineers don't read them — they file a ticket or they guess. The knowledge exists; the interface is wrong.</p>
+        <div class="metric">~10k users can move from stated intent to a governed production action.</div>
+        <div class="foot">
+          <div class="tags"><span class="tag">MCP</span><span class="tag">Developer experience</span><span class="tag">Governance</span></div>
+          <span class="more">Read &rarr;</span>
+        </div>
+      </a>
+      <a class="card" href="work/incident-triage.html">
+        <div class="kicker">AI Operations</div>
+        <h3>Rules for the 80%, models for the tail</h3>
+        <p>Most AI-for-incidents demos showcase the novel failure. Production is the opposite: the same signatures recur, and at 3am you want deterministic, not creative.</p>
+        <div class="metric">Triages incidents in seconds, with 20%+ classification accuracy.</div>
+        <div class="foot">
+          <div class="tags"><span class="tag">Knowledge graph</span><span class="tag">Multi-agent</span><span class="tag">AIOps</span></div>
+          <span class="more">Read &rarr;</span>
+        </div>
+      </a>
+      <a class="card" href="work/autoscaling.html">
+        <div class="kicker">Cost &amp; Capacity</div>
+        <h3>Right-sizing a fleet with a seasonal load curve</h3>
+        <p>Generic cost optimizers assume steady-state traffic. A business with a hard seasonal peak has the opposite requirement.</p>
+        <div class="metric">1,500+ services; 15%+ cost reduction; 1,000+ engineering hours saved.</div>
+        <div class="foot">
+          <div class="tags"><span class="tag">Karpenter</span><span class="tag">CRD controllers</span><span class="tag">FinOps</span></div>
+          <span class="more">Read &rarr;</span>
+        </div>
+      </a></div>
+    <h2>Earlier</h2>
+    
+      <div class="earlier">
+        <div class="role">Senior Product Manager (Engineering)</div>
+        <div class="meta">Cisco Systems &nbsp;·&nbsp; 2020 – 2024</div>
+        <p>Product strategy, roadmap, and go-to-market for a flagship hyperconverged infrastructure platform spanning cloud-native infra, DevOps tooling, and analytics. Shipped some of the business unit's earliest LLM products, and negotiated certified technology partnerships with Google Cloud and Red Hat. Moved from consulting into product here and was promoted to Senior in two years.</p>
+      </div>
+      <div class="earlier">
+        <div class="role">Senior Consultant, Technology</div>
+        <div class="meta">Accenture &nbsp;·&nbsp; 2014 – 2018</div>
+        <p>Technology and digital transformation consulting delivered across Taipei, Shenzhen, Beijing, Raleigh, and San Francisco. Clients included ByteDance / TikTok, Alibaba, SAP Labs, Huawei, HTC, and Lenovo. Top Performer three consecutive years.</p>
+      </div></section><section role="tabpanel" class="panel wrap" id="panel-stack" aria-labelledby="tab-stack" hidden>
+    <p class="lede">Three domains, with self-assessed depth against an explicit rubric rather than a logo wall. I'd rather be checked on this than flatter myself. Open a domain for how I actually use it.</p>
+    <div class="rubric"><div><strong>Expert</strong><p>Defined architecture and requirements, made the build/buy call, can defend the tradeoffs at a whiteboard.</p></div><div><strong>Practiced</strong><p>Wrote PRDs against it and worked daily with the engineers building it.</p></div><div><strong>Familiar</strong><p>Evaluated it, benchmarked it, or used it as reference.</p></div></div>
+    <h2>Domains</h2>
+    <div class="domaincards">
+      <a class="dcard" href="domain/ai-agent-tooling.html">
+        <div><h3>AI &amp; Agent Tooling</h3><p>Agent runtimes, the protocol layer above them, and retrieval that holds up in production.</p></div>
+        <span class="arrow">&rarr;</span>
+      </a>
+      <a class="dcard" href="domain/platform-infra.html">
+        <div><h3>Platform &amp; Infrastructure</h3><p>Kubernetes at multi-tenant scale, and the isolation and autoscaling layers on top.</p></div>
+        <span class="arrow">&rarr;</span>
+      </a>
+      <a class="dcard" href="domain/data-analytics.html">
+        <div><h3>Data &amp; Analytics</h3><p>The measurement layer — pricing, adoption, reliability, and cost.</p></div>
+        <span class="arrow">&rarr;</span>
+      </a></div>
+    <h2>Build vs. buy — categories I've evaluated</h2>
+    <p class="note">Part of a platform PM's job is knowing when not to build. These are categories I've evaluated seriously, with the positioning I formed at the time. Reasonable people disagree, and these markets move fast.</p>
+    <div class="scroller"><table>
+      <thead><tr><th>Product</th><th>Category</th><th>Positioning as I read it</th></tr></thead>
+      <tbody><tr><td>ScaleOps</td><td>K8s cost optimization</td><td>Strong automated right-sizing. Optimizes toward observed steady state, which is the right default for most fleets.</td></tr><tr><td>Cast.ai</td><td>K8s cost optimization</td><td>Broad automation and good bin-packing. Best fit where infrastructure policy can be delegated wholesale.</td></tr><tr><td>Zesty</td><td>K8s cost optimization</td><td>Commitment and capacity management angle. Value concentrates on the purchasing side rather than workload shape.</td></tr><tr><td>AWS AgentCore</td><td>Managed agent runtime</td><td>Managed runtime with the depth of the AWS control plane behind it. Strongest where you're already all-in on AWS identity.</td></tr><tr><td>Anthropic Agents API</td><td>Managed agent runtime</td><td>Cleanest developer ergonomics of the group. Optimizes for time-to-first-agent over infrastructure control.</td></tr><tr><td>Fly.io Sprites</td><td>Ephemeral sandboxes</td><td>Fast, lightweight isolated execution. Attractive when the unit of work is short-lived and stateless.</td></tr><tr><td>Vercel Sandbox</td><td>Ephemeral sandboxes</td><td>Tight integration with an existing deploy workflow. Compelling if your app already lives there.</td></tr><tr><td>Datadog</td><td>Observability / AIOps</td><td>Deepest signal coverage in the category. The question is usually cost curve and data gravity, not capability.</td></tr></tbody>
+    </table></div></section><section role="tabpanel" class="panel wrap" id="panel-agents" aria-labelledby="tab-agents" hidden>
+    <p class="lede">This page is generated from a single structured markdown file. So is my resume PDF. So is the context an LLM gets when it's asked about my work — I built a local MCP server over the same source so an agent can query it directly rather than scraping a webpage. The point isn't the novelty. It's that a career, like a product, benefits from having one source of truth and a machine-readable interface.</p>
+    <h2>The source file</h2>
+    <div class="callout">
+      <p>The structured profile behind this page. Plain markdown with YAML frontmatter — readable by a person, parseable by a model, and the same file the resume PDF builds from.</p>
+      <a class="filelink" href="profile.md">profile.md &nbsp;&rarr;</a>
+    </div>
+    <h2>The MCP server</h2>
+    <p class="note">A personal MCP server that turns a directory of markdown into a semantically searchable knowledge base, with drafting tools on top. Built for my own use; running daily.</p>
+    <div class="diagram">
+<svg viewBox="0 0 720 200" style="color:var(--ink-2)" role="img" aria-label="Architecture: markdown files are chunked and embedded locally into a vector store, which an MCP server queries for an agent client. A filesystem watcher re-indexes on change.">
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,1 L7,4 L0,7 z" fill="currentColor" opacity=".55"/>
+    </marker>
+  </defs>
+  <g font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="11" fill="currentColor">
+    <rect x="4" y="52" width="120" height="46" rx="7" fill="var(--surface-2)" stroke="var(--rule-2)"/>
+    <text x="64" y="71" text-anchor="middle" font-weight="700">markdown</text>
+    <text x="64" y="86" text-anchor="middle" fill="currentColor" opacity=".6">+ frontmatter</text>
+    <rect x="164" y="52" width="120" height="46" rx="7" fill="var(--surface-2)" stroke="var(--rule-2)"/>
+    <text x="224" y="71" text-anchor="middle" font-weight="700">chunker</text>
+    <text x="224" y="86" text-anchor="middle" fill="currentColor" opacity=".6">category-aware</text>
+    <rect x="324" y="52" width="120" height="46" rx="7" fill="var(--surface-2)" stroke="var(--rule-2)"/>
+    <text x="384" y="71" text-anchor="middle" font-weight="700">embeddings</text>
+    <text x="384" y="86" text-anchor="middle" fill="currentColor" opacity=".6">local model</text>
+    <rect x="484" y="52" width="120" height="46" rx="7" fill="var(--surface-2)" stroke="var(--rule-2)"/>
+    <text x="544" y="71" text-anchor="middle" font-weight="700">vector store</text>
+    <text x="544" y="86" text-anchor="middle" fill="currentColor" opacity=".6">on disk</text>
+    <rect x="324" y="132" width="120" height="44" rx="7" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="384" y="151" text-anchor="middle" font-weight="700" fill="currentColor">MCP server</text>
+    <text x="384" y="166" text-anchor="middle" fill="currentColor" opacity=".6">9 tools</text>
+    <rect x="564" y="132" width="140" height="44" rx="7" fill="var(--surface-2)" stroke="var(--rule-2)"/>
+    <text x="634" y="151" text-anchor="middle" font-weight="700">agent client</text>
+    <text x="634" y="166" text-anchor="middle" fill="currentColor" opacity=".6">Claude / Cursor</text>
+    <g stroke="currentColor" stroke-opacity=".5" fill="none" marker-end="url(#ar)">
+      <path d="M126,75 L160,75"/><path d="M286,75 L320,75"/><path d="M446,75 L480,75"/>
+      <path d="M544,100 L544,154 L450,154"/><path d="M448,154 L560,154"/>
+    </g>
+    <path d="M64,100 L64,154 L318,154" stroke="var(--rule-2)" fill="none" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+    <text x="150" y="150" fill="currentColor" opacity=".5" font-size="10">watcher re-indexes on change</text>
+  </g>
+</svg>
+</div>
+    <h3>Tools it exposes</h3>
+    <div class="scroller"><table>
+      <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
+      <tbody><tr><td><code>search_knowledge_base</code></td><td>Semantic search across the corpus, optionally scoped to a category.</td></tr><tr><td><code>read_entry</code></td><td>Read one entry with its frontmatter intact.</td></tr><tr><td><code>create_entry</code></td><td>Create a new entry. Fails if it already exists unless forced.</td></tr><tr><td><code>update_entry</code></td><td>Append or overwrite. Appends by default — destructive mode is opt-in.</td></tr><tr><td><code>retrieve_drafting_context</code></td><td>Pull persona, policy, and relevant entries before writing anything.</td></tr><tr><td><code>check_task_readiness</code></td><td>Check whether enough is known to start. Returns what's missing.</td></tr><tr><td><code>ingest_knowledge_base</code></td><td>Re-index the corpus.</td></tr><tr><td><code>compile_indexes</code></td><td>Generate wiki-style index files per category.</td></tr><tr><td><code>health_check_kb</code></td><td>Report stale entries, missing metadata, and stub content.</td></tr></tbody>
+    </table></div>
+    <h2>Three decisions worth defending</h2>
+    <div class="decision"><h3>Chunking is category-aware, not one-size-fits-all</h3><p>A person's bio and a strategy doc want different treatment. Short or atomic entries stay whole; long documents split on markdown headings with the YAML frontmatter re-prepended to every chunk, so a retrieved fragment still knows what it belongs to. A sliding window is the fallback, not the default.</p></div><div class="decision"><h3>The index heals itself</h3><p>A debounced filesystem watcher re-indexes changed files automatically, re-ingest deletes prior chunks so duplicates can't accumulate, and changing the embedding model triggers a full rebuild. You edit a markdown file in any editor and retrieval is correct a second later. No ingest step to forget.</p></div><div class="decision"><h3>The agent interviews you before it drafts</h3><p>`check_task_readiness` is the tool I'd argue for hardest. Before writing anything, it checks the request against a task template and reports what's missing — so the model asks a question instead of confidently inventing a detail. Most drafting failures are missing-context failures.</p></div>
+    <p class="note">ChromaDB for vectors, sentence-transformers (all-mpnet-base-v2) for embeddings — both running locally. No API key, no external calls at query time, telemetry off. A knowledge base that includes work notes shouldn't require shipping them to a third party to search them.</p>
+    <h2>Shape of the config</h2>
+    <pre><code>{
+  "mcpServers": {
+    "knowledge-base": {
+      "command": "bash",
+      "args": ["/absolute/path/to/start_server.sh"],
+      "env": {}
+    }
+  }
+}</code></pre>
+    <p class="note">Honest framing: this is a personal project I use daily, not a packaged product. It runs locally against my own corpus and isn't distributed. The config below is illustrative of the shape, not an install path.</p></section><section role="tabpanel" class="panel wrap" id="panel-about" aria-labelledby="tab-about" hidden>
+    <div class="about"><p>I don't treat infrastructure as a plumbing problem. I treat it as a developer experience problem. When an engineer spends a workday editing YAML to change one autoscaling parameter, or diagnoses the same failure signature for the fortieth time in a quarter, that's a product failure wearing an engineering costume. My job is to find the product underneath the infrastructure.</p><p>I got here sideways — consulting across Taipei, Shenzhen, Beijing, and the Bay Area, then product at Cisco during the shift to cloud-native infrastructure. Lately I've been the sole PM for an internal developer platform: the agent runtime and sandbox, the Kubernetes compute layer beneath it, and the incident response system that keeps it standing. My users are engineers, and the product is the paved road they ship on.</p><p>The industry context happens to be consumer finance, but little of the work is finance-specific. Multi-tenant isolation, a governed path from intent to production, and an operations layer people trust at 3am are every platform team's problems — a seasonal traffic curve just makes them arrive earlier and hurt more.</p><p>That inside view is what I'd bring to a vendor. I've been the buyer evaluating this category and the builder who decided to build instead. I know which demos land with an enterprise platform team, which get quietly dismissed, and what the internal alternative actually costs.</p></div>
+    <h2>Education</h2>
+    <div class="edu"><div class="school">UC Berkeley, Haas School of Business, MBA, 2020</div><div class="detail">International Office Award · Foxconn Scholarship · VP, Haas Tech Club · Student Instructor of PM &amp; Data Analytics</div></div><div class="edu"><div class="school">National Taiwan University, MS, Computer Science and Electrical Engineering, 2013</div><div class="detail">Recommender Systems, Collaborative Filtering, ML, Network Graph Theory</div></div><div class="edu"><div class="school">National Tsing Hua University, BS, Computer Science &amp; Quantitative Finance, 2011</div></div><div class="edu"><div class="school">Continuing Education</div><div class="detail">Claude Certified Architect · Reforge: Product Strategy, Experimentation · Coursera: Deep Learning, GenAI with LLMs</div></div>
+    <h2>Community &amp; writing</h2>
+    <ul class="community"><li>Organizing team, GenAI Summit SF</li><li>Presenter, Kubernetes Community Days SF Bay Area 2025</li><li>Conference Speaker, Cisco Live</li><li>Board Member, NATEA (North American Taiwanese Engineering Association)</li><li>Cal Hackathon Mentor, UC Berkeley</li><li>Content creator: GenAI write-ups and industry analysis (Mandarin)</li><li>30K+ social / fanpage followers</li></ul>
+    <h2>Contact</h2>
+    <p class="note">Best reached by email or LinkedIn.<br>
+      <a href="mailto:yenkai.ykh@gmail.com">yenkai.ykh@gmail.com</a>
+      <span class="sep">·</span>
+      <a href="http://linkedin.com/in/yenkaihuang">linkedin.com/in/YenkaiHuang</a>
+    </p></section>
+<footer class="wrap">
+  Built from a single markdown source · <a href="profile.md">profile.md</a>
+</footer>
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  var panels=[].slice.call(document.querySelectorAll('[role="tabpanel"]'));
+  if(!tabs.length)return;
+  function select(id,focus){
+    tabs.forEach(function(t){
+      var on=t.dataset.tab===id;
+      t.setAttribute('aria-selected',on?'true':'false');
+      t.tabIndex=on?0:-1;
+      if(on&&focus)t.focus();
+    });
+    panels.forEach(function(pl){pl.hidden=pl.id!=='panel-'+id;});
+    if(history.replaceState)history.replaceState(null,'','#'+id);
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){select(t.dataset.tab,false);});
+    t.addEventListener('keydown',function(e){
+      var i=tabs.indexOf(t),n=null;
+      if(e.key==='ArrowRight')n=tabs[(i+1)%tabs.length];
+      else if(e.key==='ArrowLeft')n=tabs[(i-1+tabs.length)%tabs.length];
+      else if(e.key==='Home')n=tabs[0];
+      else if(e.key==='End')n=tabs[tabs.length-1];
+      if(n){e.preventDefault();select(n.dataset.tab,true);}
+    });
+  });
+  function fromHash(){
+    var id=(location.hash||'').replace('#','');
+    if(tabs.some(function(t){return t.dataset.tab===id;}))select(id,false);
+  }
+  window.addEventListener('hashchange',fromHash);
+  fromHash();
+})();
+
+(function(){
+  var el=document.getElementById('flip');
+  if(!el)return;
+  var roles=JSON.parse(el.dataset.roles||'[]');
+  if(roles.length<2)return;
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var i=0,busy=false;
+  function next(){
+    if(busy||document.hidden)return;
+    busy=true;
+    el.classList.add('out');
+    setTimeout(function(){
+      i=(i+1)%roles.length;
+      el.textContent=roles[i];
+      el.classList.remove('out');
+      el.classList.add('in');
+      setTimeout(function(){el.classList.remove('in');busy=false;},340);
+    },300);
+  }
+  setInterval(next,2600);
+})();
+
+(function(){
+  var c=document.getElementById('topo');
+  if(!c||!c.getContext)return;
+  var host=c.parentNode, ctx=c.getContext('2d');
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var css=getComputedStyle(document.documentElement);
+  function hexRGB(h){h=(h||'').trim().replace('#','');
+    if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.slice(0,2),16)||0,parseInt(h.slice(2,4),16)||0,parseInt(h.slice(4,6),16)||0];}
+  var MC=hexRGB(css.getPropertyValue('--muted')||'#93a0b1');
+  var AC=hexRGB(css.getPropertyValue('--accent')||'#f0b429');
+  function rgba(c,a){return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';}
+
+  var CELL=76, nodes=[], ripples=[], W=0,H=0,D=0,dpr=1,raf=null,visible=true,t=0,evictAt=0;
+  var mx=-1,my=-1,hasPointer=false, CD=185, MAXN=120, seeded=false;
+
+  function spawn(){return {x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,
+    hot:Math.random()<1/11, life:1, fading:0, wait:0, phase:Math.random()*6.283};}
+
+  function init(){
+    var r=host.getBoundingClientRect();
+    W=r.width; H=r.height;
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    c.width=Math.max(1,W*dpr); c.height=Math.max(1,H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    D=Math.min(150,W*0.14);
+    var n=Math.min(70,Math.floor(W*H/19000));
+    nodes=[];
+    for(var i=0;i<n;i++){
+      var nd=spawn();
+      if(!seeded){ nd.life=0; nd.fading=-1; nd.wait=Math.floor(Math.random()*46); }
+      nodes.push(nd);
+    }
+    seeded=true;
+    ripples=[];
+  }
+
+  // Layer 1 — the lattice: cluster slots. Minor rule every cell, major every 4th.
+  function grid(){
+    var i;
+    ctx.lineWidth=1;
+    for(i=0;i<=Math.ceil(W/CELL);i++){
+      var x=Math.round(i*CELL)+.5;
+      ctx.strokeStyle=rgba(MC, i%4===0?0.075:0.032);
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+    }
+    for(i=0;i<=Math.ceil(H/CELL);i++){
+      var y=Math.round(i*CELL)+.5;
+      ctx.strokeStyle=rgba(MC, i%4===0?0.075:0.032);
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    }
+  }
+
+  // Layer 2 — a scheduled node lights the slot it occupies.
+  function slots(){
+    for(var i=0;i<nodes.length;i++){
+      var p=nodes[i]; if(!p.hot)continue;
+      var cx=Math.floor(p.x/CELL)*CELL, cy=Math.floor(p.y/CELL)*CELL;
+      var pulse=0.5+0.5*Math.sin(t/2200*6.283+p.phase);
+      ctx.fillStyle=rgba(AC,0.030*p.life*(0.55+0.45*pulse));
+      ctx.fillRect(cx,cy,CELL,CELL);
+      ctx.strokeStyle=rgba(AC,0.10*p.life);
+      ctx.lineWidth=1;
+      ctx.strokeRect(Math.round(cx)+.5,Math.round(cy)+.5,CELL,CELL);
+    }
+  }
+
+  // Layer 3 — the cursor is a scheduler: it lights the slot under it and
+  // links to any node in range, so the mesh reaches toward you.
+  function cursor(){
+    if(!hasPointer)return;
+    var cx=Math.floor(mx/CELL)*CELL, cy=Math.floor(my/CELL)*CELL;
+    ctx.fillStyle=rgba(AC,0.045);
+    ctx.fillRect(cx,cy,CELL,CELL);
+    ctx.strokeStyle=rgba(AC,0.20);
+    ctx.lineWidth=1;
+    ctx.strokeRect(Math.round(cx)+.5,Math.round(cy)+.5,CELL,CELL);
+    for(var i=0;i<nodes.length;i++){
+      var p=nodes[i],dx=p.x-mx,dy=p.y-my,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<CD){
+        ctx.strokeStyle=rgba(AC,0.26*(1-d/CD)*p.life);
+        ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(p.x,p.y);ctx.stroke();
+      }
+    }
+    ctx.fillStyle=rgba(AC,0.75);
+    ctx.beginPath();ctx.arc(mx,my,2.2,0,6.283);ctx.fill();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    grid(); slots(); cursor();
+    var i,j;
+    for(i=0;i<ripples.length;i++){
+      var r=ripples[i];
+      ctx.strokeStyle=rgba(AC,0.20*(1-r.p));
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(r.x,r.y,r.p*130,0,6.283);ctx.stroke();
+    }
+    for(i=0;i<nodes.length;i++){
+      for(j=i+1;j<nodes.length;j++){
+        var a=nodes[i],b=nodes[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<D){
+          ctx.strokeStyle=rgba((a.hot||b.hot)?AC:MC,0.18*(1-d/D)*Math.min(a.life,b.life));
+          ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    for(i=0;i<nodes.length;i++){
+      var q=nodes[i];
+      if(q.hot){
+        var pl=0.55+0.45*Math.sin(t/1600*6.283+q.phase);
+        ctx.fillStyle=rgba(AC,0.9*q.life*pl);
+        ctx.beginPath();ctx.arc(q.x,q.y,2.6,0,6.283);ctx.fill();
+      }else{
+        ctx.fillStyle=rgba(MC,0.5*q.life);
+        ctx.beginPath();ctx.arc(q.x,q.y,1.5,0,6.283);ctx.fill();
+      }
+    }
+  }
+
+  function step(ts){
+    if(!visible||document.hidden){raf=null;return;}
+    t=ts||0;
+    var i;
+    for(i=0;i<nodes.length;i++){
+      var p=nodes[i];
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      if(p.wait>0){p.wait--;}
+      else if(p.fading===1){p.life-=0.03;if(p.life<=0){var hot=p.hot;nodes[i]=spawn();nodes[i].hot=hot;nodes[i].life=0;nodes[i].fading=-1;}}
+      else if(p.fading===-1){p.life+=0.03;if(p.life>=1){p.life=1;p.fading=0;}}
+    }
+    for(i=ripples.length-1;i>=0;i--){ripples[i].p+=0.012;if(ripples[i].p>=1)ripples.splice(i,1);}
+    if(t-evictAt>4000 && nodes.length){
+      evictAt=t;
+      var k=Math.floor(Math.random()*nodes.length);
+      if(!nodes[k].fading){nodes[k].fading=1;ripples.push({x:nodes[k].x,y:nodes[k].y,p:0});}
+    }
+    draw();
+    raf=requestAnimationFrame(step);
+  }
+  function start(){if(!raf&&!reduce){raf=requestAnimationFrame(step);}}
+  function stop(){if(raf){cancelAnimationFrame(raf);raf=null;}}
+
+  init(); draw();
+  if(reduce)return;
+  // Interaction. Bound to the hero, not the canvas — the veil and text sit on top.
+  function at(e){var r=host.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+  host.addEventListener('pointermove',function(e){
+    if(e.pointerType==='touch')return;
+    var q=at(e); mx=q[0]; my=q[1]; hasPointer=true;
+  },{passive:true});
+  host.addEventListener('pointerleave',function(){hasPointer=false;mx=my=-1;},{passive:true});
+  host.addEventListener('pointerdown',function(e){
+    if(e.target.closest('a,button'))return;   // never hijack a link or the tabs
+    var q=at(e);
+    ripples.push({x:q[0],y:q[1],p:0});
+    if(nodes.length<MAXN){
+      var n=spawn(); n.x=q[0]; n.y=q[1]; n.hot=true; n.life=0; n.fading=-1;
+      nodes.push(n);
+    }
+  },{passive:true});
+
+  if(window.IntersectionObserver){
+    new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)start();else stop();},{threshold:0}).observe(host);
+  }
+  document.addEventListener('visibilitychange',function(){if(document.hidden)stop();else if(visible)start();});
+  var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){init();draw();},150);});
+  start();
+})();
+</script>
+</body>
+</html>

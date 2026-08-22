@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platform &amp; Infrastructure — Yenkai Huang</title>
+<meta name="description" content="Kubernetes at multi-tenant scale, and the isolation and autoscaling layers on top.">
+<meta property="og:title" content="Platform &amp; Infrastructure — Yenkai Huang">
+<meta property="og:description" content="Kubernetes at multi-tenant scale, and the isolation and autoscaling layers on top.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0e1116; --surface:#151a21; --surface-2:#1b212a;
+  --rule:#232b36; --rule-2:#2e3846;
+  --ink:#e6ebf2; --ink-2:#c6cfdb; --muted:#93a0b1; --faint:#76849a;
+  --accent:#f0b429; --accent-dim:#a8791a;
+  --maxw:860px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--ground); color:var(--ink-2);
+  line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
+a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+code,pre,.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ── Hero: one full viewport, centred, canvas behind ── */
+.hero{
+  position:relative;min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:80px 24px 96px;overflow:hidden;
+}
+#topo{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.hero-veil{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 58% 48% at 50% 44%,
+    rgba(14,17,22,.90) 0%, rgba(14,17,22,.62) 52%, rgba(14,17,22,0) 100%);
+}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:1040px;display:flex;flex-direction:column;align-items:center;gap:0}
+.hero-name{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82rem;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:22px;
+}
+.roleline{
+  font-family:'Archivo',-apple-system,Helvetica,Arial,sans-serif;
+  font-size:clamp(2rem,7.4vw,5rem);font-weight:800;letter-spacing:-.04em;
+  line-height:1.0;color:var(--ink);margin-bottom:28px;
+  display:grid;grid-template-columns:minmax(0,1fr);perspective:900px;
+}
+.roleline>.sizer,.roleline>.live{grid-area:1/1}
+.roleline>.sizer{visibility:hidden;pointer-events:none}
+.roleline>.live{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:0 .16em}
+.flip{display:inline-block;transform-origin:50% 60%;backface-visibility:hidden}
+.flip.out{animation:flipOut .3s cubic-bezier(.55,0,.85,.2) forwards}
+.flip.in{animation:flipIn .38s cubic-bezier(.2,.9,.3,1)}
+@keyframes flipOut{to{transform:rotateX(-85deg);opacity:0}}
+@keyframes flipIn{from{transform:rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+.flip::after{
+  content:"";display:inline-block;width:.42em;height:.82em;background:var(--accent);
+  margin-left:.14em;transform:translateY(.02em);animation:blink 1.15s steps(1,end) infinite;
+}
+.roleline>.sizer .flip::after{animation:none}
+@keyframes blink{0%,48%{opacity:1}49%,100%{opacity:0}}
+.hero-lede{font-size:1.12rem;color:var(--ink-2);max-width:46ch;margin-bottom:34px;text-wrap:balance}
+.hero-contact{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.8rem;color:var(--muted);
+  display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;
+}
+.hero-contact a{color:var(--muted);text-decoration-color:var(--rule-2)}
+.hero-contact a:hover{color:var(--accent)}
+.scrollcue{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--faint);text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.scrollcue:hover{color:var(--accent)}
+.scrollcue span{display:block;width:1px;height:26px;background:linear-gradient(var(--rule-2),transparent);animation:cue 2.4s ease-in-out infinite}
+@keyframes cue{0%,100%{opacity:.35;transform:scaleY(.7)}50%{opacity:1;transform:scaleY(1)}}
+
+/* ── Orchestrated entrance ── */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes settle{from{opacity:0}to{opacity:1}}
+#topo{animation:settle 1100ms ease-out both}
+.hero-inner>*{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both}
+.hero-inner>*:nth-child(1){animation-delay:120ms}
+.hero-inner>*:nth-child(2){animation-delay:250ms}
+.hero-inner>*:nth-child(3){animation-delay:400ms}
+.hero-inner>*:nth-child(4){animation-delay:530ms}
+.scrollcue{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both;animation-delay:760ms}
+
+/* ── Tabs ── */
+.tabbar{position:sticky;top:0;z-index:30;background:var(--ground);border-bottom:1px solid var(--rule)}
+.tablist{max-width:var(--maxw);margin:0 auto;padding:0 24px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tablist::-webkit-scrollbar{display:none}
+.tab{
+  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);padding:16px 13px 13px;cursor:pointer;
+  white-space:nowrap;transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* ── Panels ── */
+.panel{padding:56px 0 112px}
+.panel[hidden]{display:none}
+.lede{font-size:1.02rem;color:var(--muted);max-width:60ch;margin-bottom:40px}
+h2{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);margin:56px 0 20px;padding-bottom:10px;
+  border-bottom:1px solid var(--rule);font-weight:500;
+}
+h2:first-of-type{margin-top:0}
+h3{font-family:'Archivo',sans-serif;font-size:1.12rem;font-weight:700;color:var(--ink);letter-spacing:-.015em;margin-bottom:8px;text-wrap:balance}
+
+/* ── Work cards ── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.card{
+  display:flex;flex-direction:column;background:var(--surface);padding:26px 24px 22px;
+  text-decoration:none;color:inherit;transition:background .18s;
+}
+.card:hover{background:var(--surface-2);color:inherit}
+.card .kicker{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:12px;
+}
+.card p{font-size:.93rem;color:var(--muted);margin-bottom:14px}
+.card .metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.75rem;color:var(--ink-2);line-height:1.55;margin-bottom:14px}
+.card .metric::before{content:"→ ";color:var(--accent)}
+.card .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-top:12px}
+.more{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);flex:none}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--rule-2);color:var(--muted);font-size:.65rem;padding:2px 8px}
+
+/* ── Domain rows ── */
+.domaincards{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.dcard{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  border-bottom:1px solid var(--rule);padding:22px 4px;text-decoration:none;color:inherit;
+  transition:padding-left .18s,background .18s;
+}
+.dcard:hover{padding-left:12px;background:var(--surface);color:inherit}
+.dcard p{font-size:.9rem;color:var(--muted);margin-top:5px}
+.dcard .arrow{color:var(--accent);font-size:1.05rem;flex:none}
+
+/* ── Earlier ── */
+.earlier{padding-left:18px;border-left:1px solid var(--rule-2);margin-bottom:22px}
+.earlier .role{font-weight:600;color:var(--ink);font-size:.98rem}
+.earlier .meta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.71rem;color:var(--faint);letter-spacing:.08em;margin:3px 0 8px}
+.earlier p{font-size:.91rem;color:var(--muted)}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:8px}
+th{
+  text-align:left;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);padding:0 14px 10px 0;border-bottom:1px solid var(--rule-2);font-weight:500;
+}
+td{padding:12px 14px 12px 0;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--muted)}
+td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+.scroller{overflow-x:auto;margin-bottom:28px}
+.depth{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;white-space:nowrap}
+.d-expert{background:var(--accent);color:var(--ground);font-weight:500}
+.d-practiced{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule-2)}
+.d-familiar{background:transparent;color:var(--faint);border:1px solid var(--rule)}
+
+.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:36px}
+.rubric div{background:var(--surface);padding:18px}
+.rubric strong{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.rubric p{font-size:.85rem;color:var(--muted);margin-top:8px}
+
+/* ── For Agents ── */
+.callout{background:var(--surface);border:1px solid var(--rule);padding:24px;margin-bottom:30px}
+.callout p{font-size:.95rem;color:var(--muted)}
+.filelink{
+  display:inline-flex;align-items:center;gap:9px;margin-top:16px;background:var(--accent);color:var(--ground);
+  padding:10px 17px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.76rem;font-weight:500;text-decoration:none;
+}
+.filelink:hover{background:var(--ink);color:var(--ground)}
+.diagram{background:var(--surface);border:1px solid var(--rule);padding:24px 18px;margin-bottom:30px;overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:560px;height:auto}
+.decision{margin-bottom:24px}
+.decision p{font-size:.93rem;color:var(--muted)}
+pre{background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);padding:18px 20px;overflow-x:auto;font-size:.79rem;line-height:1.65;margin-bottom:12px}
+.note{font-size:.87rem;color:var(--muted);margin-bottom:28px;max-width:62ch}
+
+/* ── About ── */
+.about{display:flex;flex-direction:column;gap:18px}
+.about p{font-size:1rem;color:var(--ink-2);max-width:62ch}
+.edu{margin-bottom:17px}
+.edu .school{font-weight:600;color:var(--ink);font-size:.99rem}
+.edu .detail{font-size:.86rem;color:var(--muted)}
+.community{display:flex;flex-direction:column;gap:8px}
+.community li{font-size:.93rem;color:var(--muted);list-style:none;padding-left:20px;position:relative}
+.community li::before{content:"·";position:absolute;left:5px;color:var(--accent);font-weight:700}
+
+/* ── Detail pages ── */
+.backlink{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:inline-block;margin-bottom:34px}
+.backlink:hover{color:var(--accent)}
+.detail-head{padding:60px 0 10px}
+.detail-head h1{font-family:'Archivo',sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.07;color:var(--ink);margin-bottom:16px;max-width:19ch;text-wrap:balance}
+.detail-metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.83rem;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:16px;margin-top:20px;max-width:60ch}
+.detail-metric::before{content:"→ ";color:var(--accent)}
+.detail-body{padding:20px 0 104px}
+.detail-body section{margin-bottom:38px}
+.detail-body h2{border:0;margin:0 0 12px;padding:0}
+.detail-body p{font-size:1.01rem;color:var(--ink-2);max-width:64ch}
+.nextprev{border-top:1px solid var(--rule);padding-top:24px;display:flex;flex-wrap:wrap;gap:10px}
+.nextprev a{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;text-decoration:none;border:1px solid var(--rule-2);padding:10px 14px;color:var(--muted)}
+.nextprev a:hover{border-color:var(--accent);color:var(--accent)}
+
+footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;color:var(--faint)}
+
+@media (max-width:700px){
+  .hero{padding:72px 20px 88px}
+  .cards{grid-template-columns:1fr}
+  .rubric{grid-template-columns:1fr}
+  .panel{padding:40px 0 80px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  /* The entrance animates opacity 0 -> 1 with fill-mode both. Killing the
+     animation without this would leave the whole hero invisible. */
+  #topo,.hero-inner>*,.scrollcue{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap detail-head">
+  <a class="backlink" href="../index.html#stack">&larr; All domains</a>
+  <h1>Platform &amp; Infrastructure</h1>
+  <p class="hero-sub">Kubernetes at multi-tenant scale, and the isolation and autoscaling layers on top.</p>
+</div>
+<div class="wrap detail-body">
+  <section><h2>How I use it</h2><p>I'm a PM who reads controller code. Not to write it, but because the product decisions in this domain are inseparable from the mechanics — you can't have a useful opinion about an autoscaling policy without understanding what the scheduler will actually do with it.</p></section>
+  <section>
+    <h2>Depth</h2>
+    <div class="scroller"><table>
+      <thead><tr><th>Technology</th><th>Depth</th><th>What I did with it</th></tr></thead>
+      <tbody><tr><td>Kubernetes</td><td><span class="depth d-expert">Expert</span></td><td>CKA certified. Autoscaling, namespace operations, multi-tenant platform design.</td></tr><tr><td>Karpenter</td><td><span class="depth d-expert">Expert</span></td><td>Provisioning and consolidation behaviour under seasonal load.</td></tr><tr><td>VPA / HPA</td><td><span class="depth d-expert">Expert</span></td><td>Right-sizing policy and CRD-based controller design.</td></tr><tr><td>gVisor</td><td><span class="depth d-practiced">Practiced</span></td><td>Syscall-level isolation for untrusted agent workloads.</td></tr><tr><td>Cilium eBPF</td><td><span class="depth d-practiced">Practiced</span></td><td>Network policy enforcement at the sandbox boundary.</td></tr><tr><td>AWS EKS</td><td><span class="depth d-practiced">Practiced</span></td><td>Primary production environment.</td></tr><tr><td>Istio</td><td><span class="depth d-familiar">Familiar</span></td><td>Service mesh evaluation and traffic policy context.</td></tr><tr><td>GCP GKE</td><td><span class="depth d-familiar">Familiar</span></td><td>Comparative evaluation against managed alternatives.</td></tr></tbody>
+    </table></div>
+  </section>
+  <section><h2>Where I think this goes</h2><p>Kubernetes won the orchestration argument and lost the usability one. The durable product opportunity in this domain is not another abstraction over it — it's making the existing primitives legible to the people who have to operate them at 3am.</p></section>
+  <div class="nextprev"><a href="ai-agent-tooling.html">AI &amp; Agent Tooling &rarr;</a><a href="data-analytics.html">Data &amp; Analytics &rarr;</a></div>
+</div>
+<footer class="wrap">
+  Built from a single markdown source · <a href="../profile.md">profile.md</a>
+</footer>
+<script></script>
+</body>
+</html>
