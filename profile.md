@@ -5,7 +5,7 @@
 name: "Yenkai Huang"
 title: "Staff Product Manager · AI-Native Developer Platform"
 contact:
-  email: "yenkai.ykh@gmail.com"
+  form: "https://yenkai.site/#contact"
   linkedin_label: "linkedin.com/in/YenkaiHuang"
   linkedin_url: "http://linkedin.com/in/yenkaihuang"
   location: "San Francisco Bay Area"

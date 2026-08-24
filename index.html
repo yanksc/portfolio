@@ -190,6 +190,25 @@ td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
 .decision p{font-size:.93rem;color:var(--muted)}
 pre{background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);padding:18px 20px;overflow-x:auto;font-size:.79rem;line-height:1.65;margin-bottom:12px}
 .note{font-size:.87rem;color:var(--muted);margin-bottom:28px;max-width:62ch}
+.contact-form{display:flex;flex-direction:column;gap:14px;max-width:46ch;margin:18px 0 28px}
+.contact-form label{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.contact-form input,.contact-form textarea{
+  font:inherit;font-size:.93rem;color:var(--ink);background:var(--surface);
+  border:1px solid var(--rule-2);border-radius:4px;padding:10px 12px;width:100%;
+  font-family:'IBM Plex Sans',sans-serif;resize:vertical;
+}
+.contact-form input:focus,.contact-form textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.contact-form .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.contact-form button{
+  align-self:flex-start;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.8rem;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--ground);background:var(--accent);
+  border:0;border-radius:4px;padding:11px 20px;cursor:pointer;
+}
+.contact-form button:hover{background:var(--accent-dim)}
+.contact-form button:disabled{opacity:.6;cursor:default}
+.contact-status{font-size:.85rem;margin-top:2px}
+.contact-status.ok{color:var(--accent)}
+.contact-status.err{color:#e0716b}
 
 /* ── About ── */
 .about{display:flex;flex-direction:column;gap:18px}
@@ -248,7 +267,7 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
     </h1>
     <p class="hero-lede">I build the infrastructure AI agents actually run on: agent runtimes, sandbox isolation, and the developer platform underneath them.</p>
     <div class="hero-contact">
-      <a href="mailto:yenkai.ykh@gmail.com">yenkai.ykh@gmail.com</a>
+      <a href="#about">Contact</a>
       <a href="http://linkedin.com/in/yenkaihuang">linkedin.com/in/YenkaiHuang</a>
       <span>San Francisco Bay Area</span>
     </div>
@@ -444,12 +463,26 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
     <div class="edu"><div class="school">UC Berkeley, Haas School of Business, MBA, 2020</div><div class="detail">International Office Award · Foxconn Scholarship · VP, Haas Tech Club · Student Instructor of PM &amp; Data Analytics</div></div><div class="edu"><div class="school">National Taiwan University, MS, Computer Science and Electrical Engineering, 2013</div><div class="detail">Recommender Systems, Collaborative Filtering, ML, Network Graph Theory</div></div><div class="edu"><div class="school">National Tsing Hua University, BS, Computer Science &amp; Quantitative Finance, 2011</div></div><div class="edu"><div class="school">Continuing Education</div><div class="detail">Claude Certified Architect · Reforge: Product Strategy, Experimentation · Coursera: Deep Learning, GenAI with LLMs</div></div>
     <h2>Community &amp; writing</h2>
     <ul class="community"><li>Organizing team, GenAI Summit SF</li><li>Presenter, Kubernetes Community Days SF Bay Area 2025</li><li>Conference Speaker, Cisco Live</li><li>Board Member, NATEA (North American Taiwanese Engineering Association)</li><li>Cal Hackathon Mentor, UC Berkeley</li><li>Content creator: GenAI write-ups and industry analysis (Mandarin)</li><li>30K+ social / fanpage followers</li></ul>
-    <h2>Contact</h2>
-    <p class="note">Best reached by email or LinkedIn.<br>
-      <a href="mailto:yenkai.ykh@gmail.com">yenkai.ykh@gmail.com</a>
-      <span class="sep">·</span>
-      <a href="http://linkedin.com/in/yenkaihuang">linkedin.com/in/YenkaiHuang</a>
-    </p></section>
+    <h2 id="contact">Contact</h2>
+    <p class="note">Use the form below, or reach out on <a href="http://linkedin.com/in/yenkaihuang">LinkedIn</a>.</p>
+    <form class="contact-form" id="contact-form" action="https://formspree.io/f/REPLACE_WITH_FORMSPREE_FORM_ID" method="POST">
+      <div>
+        <label for="cf-name">Name</label>
+        <input id="cf-name" name="name" type="text" required autocomplete="name">
+      </div>
+      <div>
+        <label for="cf-email">Your email</label>
+        <input id="cf-email" name="_replyto" type="email" required autocomplete="email">
+      </div>
+      <div>
+        <label for="cf-message">Message</label>
+        <textarea id="cf-message" name="message" rows="5" required></textarea>
+      </div>
+      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input type="hidden" name="_subject" value="Portfolio contact form">
+      <button type="submit">Send</button>
+      <p class="contact-status" id="contact-status" role="status" aria-live="polite"></p>
+    </form></section>
 <footer class="wrap">
   Built from a single markdown source · <a href="profile.md">profile.md</a>
 </footer>
@@ -485,6 +518,40 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   }
   window.addEventListener('hashchange',fromHash);
   fromHash();
+})();
+
+(function(){
+  var form=document.getElementById('contact-form');
+  if(!form)return;
+  var status=document.getElementById('contact-status');
+  var btn=form.querySelector('button[type="submit"]');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(form.elements['_gotcha'].value)return;
+    btn.disabled=true;
+    status.textContent='Sending…';
+    status.className='contact-status';
+    fetch(form.action,{
+      method:'POST',
+      body:new FormData(form),
+      headers:{'Accept':'application/json'}
+    }).then(function(res){
+      if(res.ok){
+        status.textContent='Thanks — message sent.';
+        status.className='contact-status ok';
+        form.reset();
+      }else{
+        return res.json().then(function(data){
+          throw new Error((data&&data.errors&&data.errors.map(function(x){return x.message;}).join(', '))||'Something went wrong.');
+        });
+      }
+    }).catch(function(err){
+      status.textContent=err.message||'Something went wrong. Please try again.';
+      status.className='contact-status err';
+    }).finally(function(){
+      btn.disabled=false;
+    });
+  });
 })();
 
 (function(){
