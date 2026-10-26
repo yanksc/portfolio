@@ -250,6 +250,8 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   #topo,.hero-inner>*,.scrollcue{opacity:1!important;transform:none!important}
 }
 </style>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
 </head>
 <body>
 
@@ -723,6 +725,12 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   function start(){if(!raf&&!reduce){raf=requestAnimationFrame(step);}}
   function stop(){if(raf){cancelAnimationFrame(raf);raf=null;}}
 
+  document.addEventListener('portfolio-theme-change',function(){
+    css=getComputedStyle(document.documentElement);
+    MC=hexRGB(css.getPropertyValue('--muted'));
+    AC=hexRGB(css.getPropertyValue('--accent'));
+    draw();
+  });
   init(); draw();
   if(reduce)return;
   // Interaction. Bound to the hero, not the canvas — the veil and text sit on top.
