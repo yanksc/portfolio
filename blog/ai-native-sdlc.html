@@ -233,19 +233,12 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
 <link rel="stylesheet" href="../theme.css">
 <script src="../theme.js"></script>
 <link rel="stylesheet" href="blog.css">
+<link rel="stylesheet" href="playbook.css">
 <meta property="og:type" content="article">
 </head>
 <body>
-<main class="wrap post">
-<aside class="post-agenda">  <nav class="post-toc" aria-label="On this page"><strong>On this page</strong><ol>
-    <li><a href="#maturity">Progress beyond tool adoption</a></li>
-    <li><a href="#capabilities">Build context and evaluation; adopt the rest</a></li>
-    <li><a href="#workstreams">Run seven connected workstreams</a></li>
-    <li><a href="#priorities">Prioritize MCP connections and agents</a></li>
-    <li><a href="#rollout">Roll out through measured gates</a></li>
-    <li><a href="#measurement">Measure flow, quality, and cost together</a></li>
-    <li><a href="#risks">Plan for the failure modes</a></li>
-  <li><a href="#sources">Sources</a></li></ol></nav></aside>
+<main class="wrap post visual-post">
+<aside class="post-agenda"><nav class="post-toc" aria-label="Sections"><strong>Sections</strong><ol><li><a href="#summary">Short answer</a></li><li><a href="#maturity">Maturity ladder</a></li><li><a href="#capabilities">Capability map</a></li><li><a href="#workstreams">Workstreams &amp; OKRs</a></li><li><a href="#build-buy">Build, buy or adopt</a></li><li><a href="#mcp">MCP &amp; agents</a></li><li><a href="#roadmap">Roadmap</a></li><li><a href="#measurement">Measurement</a></li><li><a href="#risks">Risks</a></li><li><a href="#sources">Sources</a></li></ol></nav></aside>
 <article>
 <header class="post-header">
   <a class="backlink" href="../index.html#blog">&larr; Blog</a>
@@ -253,26 +246,45 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   <h1>Building an AI-native software delivery lifecycle</h1>
   <p class="post-deck">Coding agents can speed up implementation. The harder work is building the context, review capacity, and release discipline that turn that speed into reliable delivery.</p>
   <p class="post-meta">By Yenkai Huang · <time datetime="2026-10-26">October 26, 2026</time></p>
-</header>
+<div class="visual-lead"><ol class="run" aria-label="SDLC stages this playbook covers">
+      <li>intent</li><li class="arrow" aria-hidden="true">&rarr;</li>
+      <li>spec</li><li class="arrow" aria-hidden="true">&rarr;</li>
+      <li>pull request</li><li class="arrow" aria-hidden="true">&rarr;</li>
+      <li>build &amp; test</li><li class="arrow" aria-hidden="true">&rarr;</li>
+      <li>release</li><li class="arrow" aria-hidden="true">&rarr;</li>
+      <li>operate</li>
+    </ol></div></header>
 <div class="post-body">
+<section id="summary"><p class="section-index">01 / Short answer</p><h2>Short answer</h2>
+
   <p>Giving engineers access to a coding agent is a useful start. It does not, by itself, change how an organization delivers software. If agents produce changes faster than people can review, integrate, and release them, the extra output becomes a queue.</p>
   <p>My approach to an AI-native software delivery lifecycle starts with the whole loop: intent, specification, implementation, verification, release, and operation. Agents become a default starting point for suitable tasks. People still set intent, decide what good looks like, and own the outcome.</p>
   <p>The practical question is where an agent can remove a real constraint without moving the cost somewhere less visible. That requires shared capabilities, clear ownership, and evidence from the work itself.</p>
 
 
-  <section id="maturity"><h2>Progress beyond tool adoption</h2>
+<div class="summary-grid"><div><span>01 / Equip</span><h3>Give agents context</h3><p>Approved tools, repository rules, shared skills.</p></div><div><span>02 / Unblock</span><h3>Invest beyond code</h3><p>Review and release capacity absorb the speed.</p></div><div><span>03 / Verify</span><h3>Build your evals</h3><p>Test the outcomes only your domain can define.</p></div><div><span>04 / Expand</span><h3>Earn the next gate</h3><p>Scale when flow improves and stability holds.</p></div></div>
+<p class="visual-note">Research signals from the original playbook. Study populations and methods differ; vendor figures are labeled.</p><dl class="facts">
+      <div><dt>90%</dt><dd>of technology professionals use AI at work, and AI adoption still lowers delivery stability (<a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" target="_blank" rel="noopener">DORA 2025</a>).</dd></div>
+      <div><dt>+441%</dt><dd>median time in PR review for AI-assisted developers, across 22,000 developers (<a href="https://www.faros.ai/blog/key-takeaways-from-the-dora-report-2025" target="_blank" rel="noopener">Faros 2026</a>, vendor data).</dd></div>
+      <div><dt>30+</dt><dd>CVEs filed against MCP servers and agent tooling in January and February 2026 (<a href="https://cycode.com/blog/owasp-mcp-top-10/" target="_blank" rel="noopener">OWASP MCP Top 10 guide</a>).</dd></div>
+    </dl>
+</section>
+  <section id="maturity"><p class="section-index">02 / Maturity ladder</p><h2>Maturity ladder</h2>
   <p>AI-native describes an operating model, rather than a license count. A maturity ladder helps identify the capabilities a team needs next:</p>
-  <dl class="post-ladder">
-    <dt>L0 · Ad hoc</dt><dd>Individuals use whatever tools they can find. Start by publishing an AI stance: approved tools, data rules, access boundaries, and expectations.</dd>
-    <dt>L1 · Assisted</dt><dd>Engineers have a sanctioned agentic editor or CLI, training, and a supported review workflow. Check whether the tools help with real tasks.</dd>
-    <dt>L2 · Connected</dt><dd>Agents can read repository instructions, tickets, documentation, and telemetry through governed tool access. Shared skills replace repeated prompting and manual context transfer.</dd>
-    <dt>L3 · Orchestrated</dt><dd>Agents handle bounded tasks from a specification, such as fixing build failures, filling test gaps, or preparing migrations. Sandboxes and evaluation gates make parallel work reviewable.</dd>
-    <dt>L4 · AI-native</dt><dd>Agents carry defined classes of work across multiple lifecycle stages. Low-risk changes may qualify for automated merge and rollout under explicit policies. People remain accountable for the result.</dd>
-  </dl>
+<div class="visual-table" role="region" aria-label="Maturity ladder table" tabindex="0"><table>
+            <thead><tr><th>Level</th><th>How work happens</th><th>What the platform provides</th><th>Proposed exit gate</th></tr></thead>
+            <tbody>
+              <tr><td>L0 Ad hoc</td><td>Individuals paste code into chat tools</td><td>Nothing sanctioned</td><td>AI stance published</td></tr>
+              <tr><td>L1 Assisted</td><td>Each engineer uses a sanctioned agentic IDE or CLI; AI reviews every PR</td><td>Seats, training, an AI PR reviewer</td><td>Supported tools used reliably</td></tr>
+              <tr><td>L2 Connected</td><td>Agents read repo rules, tickets, docs and telemetry through MCP; team skills are shared</td><td>Agent config in every repo, an MCP gateway, a team plugin</td><td>Repository context and tool access work end to end</td></tr>
+              <tr><td>L3 Orchestrated</td><td>Engineers run several agents in parallel from specs; agents own bounded work such as tests, build fixes and migrations</td><td>Cloud sandboxes, spec templates, an eval harness</td><td>Agent-authored PRs are routine; review time is falling</td></tr>
+              <tr><td>L4 AI-native</td><td>Agents run plan to PR to deploy for defined work classes; PMs and designers ship small UI changes; agents triage incidents</td><td>Auto-merge for low-risk classes, risk-scored rollout, cost telemetry</td><td>Defined work classes deliver reliably with stable change-fail rate</td></tr>
+            </tbody>
+          </table></div>
   <p>Teams can occupy different levels for different workflows. Treat the ladder as a planning aid. Advancement should depend on reliable results, manageable review effort, and stable delivery.</p>
   </section>
 
-  <section id="capabilities"><h2>Build context and evaluation; adopt the rest</h2>
+  <section id="capabilities"><p class="section-index">03 / Capability map</p><h2>Capability map</h2>
   <p>Each stage of delivery needs the same underlying capabilities. When every team assembles its own agent stack, it also takes on identity, tool access, sandboxing, and audit work. A shared platform makes those decisions easier to support and inspect.</p>
   <ul>
     <li><strong>Context and knowledge.</strong> Repository instructions, architecture notes, standards, skills, and runbooks tell agents how your product works. Give this material an owner and a review date.</li>
@@ -284,20 +296,40 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   </ul>
   <p>My default is to build the parts that encode knowledge only your organization has: product context and domain-specific evaluations. Buy or adopt established tooling for coding, runtime, review, identity, and observability where it meets your requirements. Extend existing CI and release systems before adding parallel infrastructure.</p>
   <p>A team plugin can package the last mile: repository configuration, reusable skills, review rules, and runbooks. Your evaluation set can capture golden tasks, expected behavior, and failure cases. Those assets improve as the team learns; they should stay versioned alongside the work.</p>
-  </section>
+  
+<figure>
+          <div class="visual-frame" tabindex="0" role="region" aria-label="Diagram; scroll horizontally on narrow screens"><svg viewBox="0 0 760 440" role="img" aria-labelledby="cap-title" class="playbook-diagram"><title id="cap-title">Five SDLC stages run on six shared capabilities; you build only context and evals</title><defs><marker id="cap-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs><text x="380" y="26" class="q" font-size="11.5" text-anchor="middle">learnings from production feed the next spec</text><g class="edge" fill="none"><path d="M156 90H169" marker-end="url(#cap-arrow)"/><path d="M301 90H314" marker-end="url(#cap-arrow)"/><path d="M446 90H459" marker-end="url(#cap-arrow)"/><path d="M591 90H604" marker-end="url(#cap-arrow)"/><path d="M670.0 52V36H90.0V52" marker-end="url(#cap-arrow)"/></g><g class="faint"><line x1="90.0" y1="128" x2="90.0" y2="152"/><line x1="235.0" y1="128" x2="235.0" y2="152"/><line x1="380.0" y1="128" x2="380.0" y2="152"/><line x1="525.0" y1="128" x2="525.0" y2="152"/><line x1="670.0" y1="128" x2="670.0" y2="152"/></g><rect x="24" y="52" width="132" height="76" rx="8" class="box"/><text x="36" y="76" class="t" font-size="13" font-weight="600">Intent to spec</text><text x="36" y="96" class="q" font-size="11">PRDs and designs</text><text x="36" y="112" class="q" font-size="11">Agent-ready specs</text><rect x="169" y="52" width="132" height="76" rx="8" class="box"/><text x="181" y="76" class="t" font-size="13" font-weight="600">Spec to PR</text><text x="181" y="96" class="q" font-size="11">Coding agents</text><text x="181" y="112" class="q" font-size="11">AI code review</text><rect x="314" y="52" width="132" height="76" rx="8" class="box"/><text x="326" y="76" class="t" font-size="13" font-weight="600">Build and test</text><text x="326" y="96" class="q" font-size="11">Test generation</text><text x="326" y="112" class="q" font-size="11">Build-fix agents</text><rect x="459" y="52" width="132" height="76" rx="8" class="box"/><text x="471" y="76" class="t" font-size="13" font-weight="600">Release</text><text x="471" y="96" class="q" font-size="11">Risk-based rollout</text><text x="471" y="112" class="q" font-size="11">Auto-merge classes</text><rect x="604" y="52" width="132" height="76" rx="8" class="box"/><text x="616" y="76" class="t" font-size="13" font-weight="600">Operate</text><text x="616" y="96" class="q" font-size="11">On-call triage</text><text x="616" y="112" class="q" font-size="11">Incident agents</text><rect x="24" y="152" width="712" height="220" rx="8" class="box"/><text x="40" y="176" class="t" font-size="13" font-weight="600">Shared platform capabilities</text><rect x="40" y="188" width="216" height="76" rx="8" class="hot"/><text x="52" y="212" class="t" font-size="13" font-weight="600">Context and knowledge</text><text x="52" y="232" class="t" font-size="11.5">Repo config, skills, runbooks</text><text x="52" y="248" class="q" font-size="11.5">Build: your team plugin</text><rect x="272" y="188" width="216" height="76" rx="8" class="box"/><text x="284" y="212" class="t" font-size="13" font-weight="600">Tool access via MCP</text><text x="284" y="232" class="t" font-size="11.5">Gateway and registry, no PATs</text><text x="284" y="248" class="q" font-size="11.5">Buy: vendor remote servers</text><rect x="504" y="188" width="216" height="76" rx="8" class="box"/><text x="516" y="212" class="t" font-size="13" font-weight="600">Agent runtime</text><text x="516" y="232" class="t" font-size="11.5">Sandboxed background agents</text><text x="516" y="248" class="q" font-size="11.5">Buy or adopt: cloud sandboxes</text><rect x="40" y="280" width="216" height="76" rx="8" class="box"/><text x="52" y="304" class="t" font-size="13" font-weight="600">Identity and guardrails</text><text x="52" y="324" class="t" font-size="11.5">Scoped tokens and audit logs</text><text x="52" y="340" class="q" font-size="11.5">Adopt: SSO and gateway policy</text><rect x="272" y="280" width="216" height="76" rx="8" class="hot"/><text x="284" y="304" class="t" font-size="13" font-weight="600">Evals and quality gates</text><text x="284" y="324" class="t" font-size="11.5">Golden tasks, judges, CI gates</text><text x="284" y="340" class="q" font-size="11.5">Build: your own eval sets</text><rect x="504" y="280" width="216" height="76" rx="8" class="box"/><text x="516" y="304" class="t" font-size="13" font-weight="600">Measurement</text><text x="516" y="324" class="t" font-size="11.5">Lead time, cost and stability</text><text x="516" y="340" class="q" font-size="11.5">Buy or adopt: metrics platform</text><rect x="24" y="388" width="712" height="40" rx="8" class="band"/><text x="380" y="412" class="t" font-size="12.5" text-anchor="middle">People and operating model: AI stance, proficiency L1&#8211;L4, a champion per team, a weekly gate</text></svg></div>
+          <figcaption><strong>Every SDLC stage runs on six shared capabilities; build only context and evals.</strong> Highlighted boxes are the last mile you build. Buy or adopt the rest.</figcaption>
+        </figure>
+</section>
 
-  <section id="workstreams"><h2>Run seven connected workstreams</h2>
+  <section id="workstreams"><p class="section-index">04 / Workstreams &amp; OKRs</p><h2>Workstreams &amp; OKRs</h2>
   <p>Assign an outcome and an accountable owner to each workstream. Choose targets after measuring a baseline. The examples below describe what to improve, rather than prescribing the same numerical goal for every team.</p>
-  <h3>1. Guardrails and AI stance</h3><p>Make the supported path clear. Publish approved tools and data policies, broker agent access through governed connections, and expose spend. Track policy coverage, credential hygiene, audit coverage, and cost per completed change.</p>
-  <h3>2. Context and agent readiness</h3><p>Give agents the information needed to finish a task without a person repeatedly relaying it. Track repository instruction coverage, end-to-end completion on representative tasks, and human intervention per task.</p>
-  <h3>3. Intent to specification</h3><p>Turn an idea into an agent-ready brief with a problem statement, acceptance criteria, constraints, and a verification plan. Measure time to an approved spec, first-pass acceptance, and rework. Let product and design partners prototype bounded changes within the same review process.</p>
-  <h3>4. Specification to pull request</h3><p>Help agents produce small, understandable changes that reviewers can verify. Measure review wait time, review effort, PR size, and rework. Introduce automated merge only for a narrow class with proven checks and a clear owner.</p>
-  <h3>5. Agentic quality and CI</h3><p>Use agents to investigate build failures, improve tests, and repair repeatable problems. Track flaky tests, remediation time, evaluation pass rates, and change-failure rate. More generated tests are useful only when they catch meaningful failures.</p>
-  <h3>6. Release to recovery</h3><p>Carry agent assistance through rollout and operation. Start with release verification and first-draft incident triage. Use progressive delivery and rehearsed rollback paths; measure deployment wait time, recovery time, and the usefulness of triage output.</p>
-  <h3>7. People and measurement</h3><p>Give teams training, a place to share working practices, and a recurring review of outcomes. A shared enablement owner can maintain the platform while local champions bring feedback from delivery teams. Size that effort to the organization and its bottlenecks.</p>
+  <div class="workstream-card"><span class="workstream-id">A</span><div><h3>Guardrails and AI stance</h3><p>Make the supported path clear. Publish approved tools and data policies, broker agent access through governed connections, and expose spend. Track policy coverage, credential hygiene, audit coverage, and cost per completed change.</p></div></div>
+  <div class="workstream-card"><span class="workstream-id">B</span><div><h3>Context and agent readiness</h3><p>Give agents the information needed to finish a task without a person repeatedly relaying it. Track repository instruction coverage, end-to-end completion on representative tasks, and human intervention per task.</p></div></div>
+  <div class="workstream-card"><span class="workstream-id">C</span><div><h3>Intent to specification</h3><p>Turn an idea into an agent-ready brief with a problem statement, acceptance criteria, constraints, and a verification plan. Measure time to an approved spec, first-pass acceptance, and rework. Let product and design partners prototype bounded changes within the same review process.</p></div></div>
+  <div class="workstream-card"><span class="workstream-id">D</span><div><h3>Specification to pull request</h3><p>Help agents produce small, understandable changes that reviewers can verify. Measure review wait time, review effort, PR size, and rework. Introduce automated merge only for a narrow class with proven checks and a clear owner.</p></div></div>
+  <div class="workstream-card"><span class="workstream-id">E</span><div><h3>Agentic quality and CI</h3><p>Use agents to investigate build failures, improve tests, and repair repeatable problems. Track flaky tests, remediation time, evaluation pass rates, and change-failure rate. More generated tests are useful only when they catch meaningful failures.</p></div></div>
+  <div class="workstream-card"><span class="workstream-id">F</span><div><h3>Release to recovery</h3><p>Carry agent assistance through rollout and operation. Start with release verification and first-draft incident triage. Use progressive delivery and rehearsed rollback paths; measure deployment wait time, recovery time, and the usefulness of triage output.</p></div></div>
+  <div class="workstream-card"><span class="workstream-id">G</span><div><h3>People and measurement</h3><p>Give teams training, a place to share working practices, and a recurring review of outcomes. A shared enablement owner can maintain the platform while local champions bring feedback from delivery teams. Size that effort to the organization and its bottlenecks.</p></div></div>
   </section>
 
-  <section id="priorities"><h2>Prioritize MCP connections and agents</h2>
+  <section id="build-buy"><p class="section-index">05 / Build, buy or adopt</p><h2>Build, buy or adopt</h2><p>Keep product context and domain evaluations close. Buy established agent tooling and adopt the delivery infrastructure your teams already trust.</p><div class="visual-table" role="region" aria-label="Build, buy or adopt table" tabindex="0"><table>
+            <thead><tr><th>Capability</th><th>Default</th><th>What to get</th><th>What you build</th></tr></thead>
+            <tbody>
+              <tr><td>Coding agents</td><td><span class="chip buy">Buy</span></td><td>Agentic IDE and CLI seats with enterprise data controls</td><td>Repo instruction files; team subagents</td></tr>
+              <tr><td>Tool access (MCP)</td><td><span class="chip buy">Buy</span></td><td>Vendor-hosted remote MCP servers behind one gateway with SSO and audit logs</td><td>MCP servers only for your own services</td></tr>
+              <tr><td>Team knowledge</td><td><span class="chip build">Build</span></td><td>Nothing to buy; this is your context</td><td>One team plugin: skills, standards, runbooks, architecture notes</td></tr>
+              <tr><td>Intent to spec</td><td><span class="chip adopt">Adopt</span></td><td>Spec templates in your agent tool; prototyping tools for PMs and designers</td><td>Domain templates and review checklists</td></tr>
+              <tr><td>Agent runtime</td><td><span class="chip buy">Buy</span></td><td>Sandboxed cloud workspaces for background agents</td><td>Nothing; configure it rather than host it</td></tr>
+              <tr><td>Code review</td><td><span class="chip buy">Buy</span></td><td>An AI PR reviewer on every repo; an auto-merge policy</td><td>Repo review rules; your first auto-merge class</td></tr>
+              <tr><td>Build and test</td><td><span class="chip adopt">Adopt</span></td><td>Your existing CI, plus build-failure and test-generation agents</td><td>Golden eval sets; domain test skills</td></tr>
+              <tr><td>Release and operate</td><td><span class="chip adopt">Adopt</span></td><td>Progressive delivery, observability with MCP access, an on-call triage agent</td><td>Runbooks rewritten as agent skills</td></tr>
+              <tr><td>Evals and quality gates</td><td><span class="chip build">Build</span></td><td>An eval runner from your agent or CI vendor</td><td>Golden tasks, judge prompts and pass thresholds for your domain</td></tr>
+              <tr><td>Measurement</td><td><span class="chip adopt">Adopt</span></td><td>An engineering metrics platform with DORA metrics and AI cost</td><td>An org-level OKR view on top</td></tr>
+            </tbody>
+          </table></div></section>
+<section id="mcp"><p class="section-index">06 / MCP &amp; agents</p><h2>MCP &amp; agents</h2>
   <p>A tool catalog can grow faster than the value it creates. Rank candidates by the work they improve, the frequency of that work, and the risk they introduce. The playbook uses this planning heuristic:</p>
   <div class="post-formula" aria-label="Priority formula">Priority = (Reach × Time saved × Bottleneck weight × Confidence) ÷ (Effort × Risk)</div>
   <p><strong>Reach</strong> is the number of relevant uses over a consistent period. <strong>Time saved</strong> comes from a sample of real tasks. <strong>Bottleneck weight</strong> reflects how much of delivery time sits in that stage. <strong>Confidence</strong> captures the strength of the evidence. <strong>Effort</strong> includes rollout and ongoing support; <strong>risk</strong> reflects permissions and the consequences of a mistake.</p>
@@ -305,9 +337,40 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   <p>Start with connections that supply essential context: source control, issue tracking, documentation, and observability. Add design and team discussions where they carry decisions an agent needs. Bring in logs, paging, and deployment state as operational use cases mature. Build a custom MCP server when important domain information is unavailable through an existing integration.</p>
   <p>Begin with read access wherever possible. Treat PR creation, comments, deployment, and production changes as separate permission decisions. Route release actions through the established pipeline and require review at meaningful trust boundaries. Tool descriptions and tool output remain untrusted input.</p>
   <p>The strongest early agent candidates run frequently, have a bounded scope, and produce an output someone can verify: first-pass code review, build-failure investigation, incident summaries, and ticket-to-PR work from a clear specification. Expand into open-ended feature work when evaluations and review capacity support it.</p>
-  </section>
+  
+<h3 id="calculator">Priority calculator</h3>
+        <div class="calc">
+          <div class="calc-bar">
+            <p>Example inputs. Replace them with your own numbers; edits stay in this browser.</p>
+            <div class="calc-actions">
+              <button type="button" class="btn primary" id="calc-add">Add candidate</button>
+              <button type="button" class="btn" id="calc-sort">Sort by score</button>
+              <button type="button" class="btn" id="calc-reset">Reset examples</button>
+            </div>
+          </div>
+          <div class="visual-table" role="region" aria-label="Priority calculator inputs" tabindex="0">
+            <table>
+              <thead><tr><th>Rank</th><th>Candidate</th><th>Reach /wk</th><th>Hours /use</th><th>Bottleneck</th><th>Confidence</th><th>Effort (pw)</th><th>Risk</th><th>Score</th><th><span class="sr-hide">Remove</span></th></tr></thead>
+              <tbody id="calc-body"></tbody>
+            </table>
+          </div>
+          <noscript><p class="note">The calculator needs JavaScript. The formula above works the same on paper.</p></noscript>
+        </div><h3>Which MCP servers first</h3><div class="visual-table" role="region" aria-label="MCP and agents table" tabindex="0"><table>
+            <thead><tr><th>MCP server</th><th>Tier</th><th>Why it ranks here</th><th>Access to grant agents</th></tr></thead>
+            <tbody>
+              <tr><td>Source control</td><td><span class="tier">Tier 1</span></td><td>Every coding and review agent needs repo, PR and CI context</td><td>Read and open PRs; never merge</td></tr>
+              <tr><td>Issue tracker and docs wiki</td><td><span class="tier">Tier 1</span></td><td>Tickets and specs are the agent&rsquo;s task source</td><td>Read, comment, create sub-tasks</td></tr>
+              <tr><td>Metrics and observability</td><td><span class="tier">Tier 1</span></td><td>Agents verify their own changes and support triage</td><td>Read</td></tr>
+              <tr><td>Team chat</td><td><span class="tier">Tier 1</span></td><td>Decisions and incident context live in threads</td><td>Read; post to team channels</td></tr>
+              <tr><td>Design tool</td><td><span class="tier">Tier 1</span></td><td>Design-to-code and prototypes for PMs and designers</td><td>Read</td></tr>
+              <tr><td>Logs and paging</td><td><span class="tier">Tier 2</span></td><td>The on-call triage agent needs logs and alerts</td><td>Read, through brokered OAuth rather than personal tokens</td></tr>
+              <tr><td>CI/CD and deploys</td><td><span class="tier">Tier 2</span></td><td>Build logs and deploy state for fix and rollout agents</td><td>Read; deploy only through the pipeline</td></tr>
+              <tr><td>Your own service MCP</td><td><span class="tier">Tier 3</span></td><td>Domain data agents can&rsquo;t get elsewhere, such as feature flags, test tenants and config</td><td>Read in production; write in pre-production only</td></tr>
+            </tbody>
+          </table></div>
+</section>
 
-  <section id="rollout"><h2>Roll out through measured gates</h2>
+  <section id="roadmap"><p class="section-index">07 / Roadmap</p><h2>Roadmap</h2>
   <p>A calendar is useful for coordination, but passing a date does not prove readiness. I prefer four phases whose pace follows the evidence:</p>
   <ol class="post-phases">
     <li><strong>Establish foundations.</strong> Publish the AI stance, provide supported tools, define access policies, assign owners, and measure delivery by stage. <em>Gate:</em> the baseline exists and teams can explain the rules.</li>
@@ -316,9 +379,17 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
     <li><strong>Expand proven work classes.</strong> Extend agent ownership across suitable stages, put domain evaluations into CI, and manage cost per completed change. <em>Gate:</em> the gains repeat across real delivery work without increasing recovery burden.</li>
   </ol>
   <p>At each review, decide whether to continue, slow down, or hold. A missed quality guardrail should pause expansion while the team investigates. Use the longest queue in the lifecycle to decide where the next investment goes.</p>
-  </section>
+  
+<figure>
+          <div class="visual-frame" tabindex="0" role="region" aria-label="Diagram; scroll horizontally on narrow screens"><svg viewBox="0 0 760 496" role="img" aria-labelledby="quad-title" class="playbook-diagram"><title id="quad-title">Quick wins are configuration; the big bets sit in review and release</title><defs><marker id="quad-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs><rect x="80" y="20" width="328" height="234" class="tint"/><g class="faint" stroke-dasharray="4 4"><line x1="408" y1="20" x2="408" y2="436"/><line x1="80" y1="254" x2="736" y2="254"/></g><g class="edge" fill="none"><path d="M80 436H736" marker-end="url(#quad-arrow)"/><path d="M80 436V20" marker-end="url(#quad-arrow)"/></g><text x="408" y="484" class="t" font-size="12.5" text-anchor="middle">Implementation effort</text><text x="80" y="458" class="q" font-size="11.5" text-anchor="middle">Low</text><text x="736" y="458" class="q" font-size="11.5" text-anchor="end">High</text><text x="0" y="0" class="t" font-size="12.5" text-anchor="middle" transform="translate(40 228) rotate(-90)">Impact on lead time and quality</text><text x="70" y="436" class="q" font-size="11.5" text-anchor="end">Low</text><text x="70" y="30" class="q" font-size="11.5" text-anchor="end">High</text><text x="96" y="46" class="t" font-size="13" font-weight="600">Do now</text><text x="96" y="64" class="q" font-size="11.5">High impact, low effort, mostly configuration</text><circle cx="104" cy="96" r="5" class="dot-hot"/><text x="118" y="100" class="t" font-size="12.5">AI PR review on every repo</text><circle cx="104" cy="128" r="5" class="dot-hot"/><text x="118" y="132" class="t" font-size="12.5">Agent config and team plugin</text><circle cx="104" cy="160" r="5" class="dot-hot"/><text x="118" y="164" class="t" font-size="12.5">Tier-1 MCP servers via gateway</text><circle cx="104" cy="192" r="5" class="dot-hot"/><text x="118" y="196" class="t" font-size="12.5">Build-failure remediation agent</text><circle cx="104" cy="224" r="5" class="dot-hot"/><text x="118" y="228" class="t" font-size="12.5">Build and test caching</text><text x="424" y="46" class="t" font-size="13" font-weight="600">Fund as gated bets</text><text x="424" y="64" class="q" font-size="11.5">High impact, high effort, ramp on evidence</text><circle cx="432" cy="96" r="5" class="dot"/><text x="446" y="100" class="t" font-size="12.5">Risk-scored progressive delivery</text><circle cx="432" cy="128" r="5" class="dot"/><text x="446" y="132" class="t" font-size="12.5">Auto-merge for low-risk PR classes</text><circle cx="432" cy="160" r="5" class="dot"/><text x="446" y="164" class="t" font-size="12.5">On-call triage agent</text><circle cx="432" cy="192" r="5" class="dot"/><text x="446" y="196" class="t" font-size="12.5">Ticket-to-PR background agents</text><circle cx="432" cy="224" r="5" class="dot"/><text x="446" y="228" class="t" font-size="12.5">Spec-driven intent-to-PR flow</text><text x="96" y="282" class="t" font-size="13" font-weight="600">Fill in when convenient</text><text x="96" y="300" class="q" font-size="11.5">Low effort, narrower impact</text><circle cx="104" cy="332" r="5" class="dot"/><text x="118" y="336" class="t" font-size="12.5">Compliance fix-it agent</text><circle cx="104" cy="364" r="5" class="dot"/><text x="118" y="368" class="t" font-size="12.5">Docs Q&A agent for onboarding</text><circle cx="104" cy="396" r="5" class="dot"/><text x="118" y="400" class="t" font-size="12.5">Delivery metrics in team rituals</text><text x="424" y="282" class="t" font-size="13" font-weight="600">Avoid or defer</text><text x="424" y="300" class="q" font-size="11.5">High effort, duplicates what you can buy</text><circle cx="432" cy="332" r="5" class="dot"/><text x="446" y="336" class="t" font-size="12.5">Your own agent runtime or sandbox</text><circle cx="432" cy="364" r="5" class="dot"/><text x="446" y="368" class="t" font-size="12.5">Duplicate MCP servers for vendor tools</text><circle cx="432" cy="396" r="5" class="dot"/><text x="446" y="400" class="t" font-size="12.5">A bespoke metrics stack</text></svg></div>
+          <figcaption><strong>Quick wins are configuration; the big bets sit in review and release.</strong> Order inside a quadrant is not a ranking.</figcaption>
+        </figure><figure>
+          <div class="visual-frame" tabindex="0" role="region" aria-label="Diagram; scroll horizontally on narrow screens"><svg viewBox="0 0 760 342" role="img" aria-labelledby="road-title" class="playbook-diagram"><title id="road-title">Start with foundations; every phase ends at a measured gate</title><rect x="24" y="20" width="172" height="176" rx="8" class="hot"/><line x1="36" y1="74" x2="184" y2="74" class="faint"/><text x="36" y="44" class="t" font-size="13" font-weight="600">1 · Foundations</text><text x="36" y="62" class="q" font-size="11.5">Establish baseline</text><text x="36" y="96" class="t" font-size="11.5">AI stance published</text><text x="36" y="116" class="t" font-size="11.5">Tool access for all</text><text x="36" y="136" class="t" font-size="11.5">Baselines measured</text><text x="36" y="156" class="t" font-size="11.5">MCP only via gateway</text><text x="36" y="176" class="t" font-size="11.5">A champion per team</text><rect x="204" y="20" width="172" height="176" rx="8" class="box"/><line x1="216" y1="74" x2="364" y2="74" class="faint"/><text x="216" y="44" class="t" font-size="13" font-weight="600">2 · Connect</text><text x="216" y="62" class="q" font-size="11.5">Connect the workflow</text><text x="216" y="96" class="t" font-size="11.5">Agent config per repo</text><text x="216" y="116" class="t" font-size="11.5">Team plugin shipped</text><text x="216" y="136" class="t" font-size="11.5">Tier-1 MCP servers live</text><text x="216" y="156" class="t" font-size="11.5">AI review on all PRs</text><text x="216" y="176" class="t" font-size="11.5">Build-fix agent live</text><rect x="384" y="20" width="172" height="176" rx="8" class="box"/><line x1="396" y1="74" x2="544" y2="74" class="faint"/><text x="396" y="44" class="t" font-size="13" font-weight="600">3 · Orchestrate</text><text x="396" y="62" class="q" font-size="11.5">Prove bounded tasks</text><text x="396" y="96" class="t" font-size="11.5">Spec-driven flow</text><text x="396" y="116" class="t" font-size="11.5">Ticket-to-PR agents</text><text x="396" y="136" class="t" font-size="11.5">First auto-merge class</text><text x="396" y="156" class="t" font-size="11.5">Risk-scored rollout</text><text x="396" y="176" class="t" font-size="11.5">On-call triage agent</text><rect x="564" y="20" width="172" height="176" rx="8" class="box"/><line x1="576" y1="74" x2="724" y2="74" class="faint"/><text x="576" y="44" class="t" font-size="13" font-weight="600">4 · AI-native</text><text x="576" y="62" class="q" font-size="11.5">Expand proven work</text><text x="576" y="96" class="t" font-size="11.5">Agents own work classes</text><text x="576" y="116" class="t" font-size="11.5">PM/design ship UI fixes</text><text x="576" y="136" class="t" font-size="11.5">Outer-loop agents</text><text x="576" y="156" class="t" font-size="11.5">Cost per PR managed</text><text x="576" y="176" class="t" font-size="11.5">Eval suite in CI</text><line x1="24" y1="218" x2="736" y2="218" class="edge"/><path d="M200 209l9 9l-9 9l-9 -9z" class="gate"/><text x="200" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 1</text><text x="200" y="264" class="q" font-size="11.5" text-anchor="middle">Baselines set</text><text x="200" y="280" class="q" font-size="11.5" text-anchor="middle">Stance published</text><path d="M380 209l9 9l-9 9l-9 -9z" class="gate"/><text x="380" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 2</text><text x="380" y="264" class="q" font-size="11.5" text-anchor="middle">Context connected</text><text x="380" y="280" class="q" font-size="11.5" text-anchor="middle">Review time improves</text><path d="M560 209l9 9l-9 9l-9 -9z" class="gate"/><text x="560" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 3</text><text x="560" y="264" class="q" font-size="11.5" text-anchor="middle">Deploy time improves</text><text x="560" y="280" class="q" font-size="11.5" text-anchor="middle">Change-fail flat</text><path d="M736 209l9 9l-9 9l-9 -9z" class="gate"/><text x="736" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="end">Gate 4</text><text x="736" y="264" class="q" font-size="11.5" text-anchor="end">Reliable work classes</text><text x="736" y="280" class="q" font-size="11.5" text-anchor="end">Evals and cost managed</text><rect x="24" y="298" width="712" height="32" rx="8" class="band"/><text x="380" y="318" class="t" font-size="12.5" text-anchor="middle">Every week: continue, slow down or hold, based on quality and productivity</text></svg></div>
+          <figcaption><strong>Start with foundations; every phase ends at a measured gate.</strong> Illustrative sequence; set timing and thresholds from your baseline.</figcaption>
+        </figure><div class="gate-grid"><div><span class="gate-dot go"></span><strong>Continue</strong><p>Flow improves. Quality holds.</p></div><div><span class="gate-dot slow"></span><strong>Slow down</strong><p>A target slips. Investigate.</p></div><div><span class="gate-dot hold"></span><strong>Hold</strong><p>A guardrail breaks. Fix first.</p></div></div>
+</section>
 
-  <section id="measurement"><h2>Measure flow, quality, and cost together</h2>
+  <section id="measurement"><p class="section-index">08 / Measurement</p><h2>Measurement</h2>
   <p>Adoption tells you whether people are trying a tool. It does not tell you whether customers receive useful changes sooner. Measure at the level of the team that delivers together, and compare work of similar scope.</p>
   <ul>
     <li><strong>Adoption and proficiency:</strong> active use, agent-assisted work, and the workflows people can complete reliably. Treat these as inputs and learning signals.</li>
@@ -328,19 +399,54 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
     <li><strong>Experience:</strong> whether builders trust the workflow and would choose it for their next task. Use feedback to investigate friction, alongside delivery evidence.</li>
   </ul>
   <p>Avoid rewarding lines generated or AI-authored code share on their own. Both can rise while useful delivery gets worse. Use representative task evaluations and delivery telemetry to test whether perceived gains survive contact with the full workflow.</p>
-  </section>
+  
+<div class="visual-table" role="region" aria-label="Measurement table" tabindex="0"><table>
+            <thead><tr><th>Layer</th><th>Metric</th><th>Use it as</th></tr></thead>
+            <tbody>
+              <tr><td>Adoption</td><td>Weekly active AI users; share of PRs AI-assisted; share of AI-authored commits; MCP tool calls</td><td>Input only, never a target on its own</td></tr>
+              <tr><td>Proficiency</td><td>Share of engineers at L2, L3 and L4</td><td>People key result</td></tr>
+              <tr><td>Flow</td><td>Lead time by stage (prep, code, review, deploy); PR review time; deploys and merges per developer per week</td><td>Primary outcome</td></tr>
+              <tr><td>Output</td><td>Merged PRs per developer, with a size-dampened measure so line count can&rsquo;t be gamed</td><td>Secondary outcome</td></tr>
+              <tr><td>Stability</td><td>Change-fail rate, failed-deploy recovery time, rework rate, incidents per PR, median PR size</td><td>Guardrail on every speed key result</td></tr>
+              <tr><td>Economics</td><td>AI cost per merged PR; hours saved by build and fix agents</td><td>Budget review</td></tr>
+              <tr><td>Experience</td><td>Builder satisfaction; &ldquo;would you start your next feature this way?&rdquo;</td><td>Leading signal</td></tr>
+            </tbody>
+          </table></div>
+</section>
 
-  <section id="risks"><h2>Plan for the failure modes</h2>
+  <section id="risks"><p class="section-index">09 / Risks</p><h2>Risks</h2>
   <p>The most consequential failure is faster implementation feeding a system that cannot absorb it. Keep changes small, make review expectations explicit, and improve release capacity before expanding generation.</p>
   <p>Access creates a second set of risks. Use scoped, expiring credentials, registered integrations, and sandboxed execution. Review writes that cross trust boundaries. Keep the agent’s ability to read external material separate from its authority to act on internal systems.</p>
   <p>Context can fail quietly. An outdated runbook or ownerless instruction file can repeatedly steer agents toward the wrong result. Give agent-facing knowledge owners, review dates, and a path for correcting it after a failed task.</p>
   <p>Process and cost need limits too. A spec-driven workflow can generate more documents than anyone can review, while parallel agents can accumulate spend without finishing work. Keep the specification proportionate to the change, retain independent checks, and review total cost against completed outcomes.</p>
   <p>The aim is a delivery system that learns. Start with a bounded workflow, make the result inspectable, and expand when the evidence supports it. The strongest asset is the shared understanding of how to turn intent into a reliable change.</p>
-  </section>
+  
+<div class="visual-table" role="region" aria-label="Risks table" tabindex="0"><table>
+            <thead><tr><th>Risk</th><th>Why it happens</th><th>Guardrail</th></tr></thead>
+            <tbody>
+              <tr><td>Review becomes the bottleneck</td><td>Code generation can outpace review capacity and increase change size</td><td>PR size limits; AI first-pass review on every PR; auto-merge only for proven low-risk classes</td></tr>
+              <tr><td>Instability rises with throughput</td><td>Higher output puts more pressure on integration, testing, and rollout</td><td>Change-fail rate as a hard guardrail; progressive delivery; rehearsed rollbacks</td></tr>
+              <tr><td>MCP supply chain and credentials</td><td>Token mismanagement, tool poisoning, and unregistered servers</td><td>Gateway only; no personal tokens; pinned, registered servers; sandboxed execution</td></tr>
+              <tr><td>Over-scoped agent access</td><td>Broad tokens let a prompt injection in one public issue pull private data into a public PR</td><td>Least-privilege scopes that expire; human approval on writes across trust boundaries</td></tr>
+              <tr><td>Self-reported gains mislead</td><td>Developers misjudge their own speed with AI (METR)</td><td>Decide from telemetry; use surveys as a leading signal only</td></tr>
+              <tr><td>Process overload</td><td>Spec-first agent flows can produce more documents than people can review</td><td>Keep independent checks and pre-merge review; cut approval steps and document volume</td></tr>
+              <tr><td>Stale or ownerless context</td><td>Agents treat whatever docs they read as current</td><td>An owner and review date on every agent-facing doc</td></tr>
+              <tr><td>Cost creep</td><td>Token spend grows with parallel and background agents</td><td>AI cost per merged PR reviewed monthly; route routine tasks to cheaper models</td></tr>
+              <tr><td>Optimizing only the code step</td><td>The constraint moves to review, integration and deployment</td><td>Fund review and release work before adding more code generators</td></tr>
+            </tbody>
+          </table></div>
+</section>
 
-  <aside class="post-sources" aria-labelledby="sources"><h2 id="sources">Source and further reading</h2>
+  <aside class="post-sources" aria-labelledby="sources"><h2 id="sources">Sources</h2>
   <p>Adapted from my <a href="https://yanksc.github.io/ai-native-sdlc-playbook/">AI-Native SDLC Playbook</a>. This edition generalizes the audience, staffing, targets, and rollout schedule. The frameworks are proposed operating guidance, not universal benchmarks.</p>
-  <p>The original playbook draws on <a href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model">DORA’s AI Capabilities Model</a>, the <a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report">2025 DORA Report</a>, and METR’s <a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/">2025 developer study</a> and <a href="https://metr.org/blog/2026-02-24-uplift-update/">2026 follow-up</a>. The playbook also links vendor telemetry and a vendor summary of MCP security risks; those are distinct from the primary research.</p>
+<ul class="sources">
+          <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model" target="_blank" rel="noopener">Introducing the DORA AI Capabilities Model</a>, Google Cloud, September 2025</li>
+          <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" target="_blank" rel="noopener">Announcing the 2025 DORA Report: State of AI-Assisted Software Development</a>, Google Cloud, September 2025</li>
+          <li><a href="https://www.faros.ai/blog/key-takeaways-from-the-dora-report-2025" target="_blank" rel="noopener">Key takeaways from the DORA Report 2025</a>, Faros (vendor), updated with its 2026 telemetry</li>
+          <li><a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/" target="_blank" rel="noopener">Measuring the impact of early-2025 AI on experienced open-source developer productivity</a>, METR, July 2025</li>
+          <li><a href="https://metr.org/blog/2026-02-24-uplift-update/" target="_blank" rel="noopener">We are changing our developer productivity experiment design</a>, METR, February 2026</li>
+          <li><a href="https://cycode.com/blog/owasp-mcp-top-10/" target="_blank" rel="noopener">OWASP MCP Top 10: a guide to securing Model Context Protocol in 2026</a>, Cycode (vendor summary), June 2026</li>
+        </ul>
   <p>A personal perspective, not affiliated with or endorsed by any employer. Adapted text licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
   </aside>
 </div>
@@ -349,5 +455,6 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
 </main>
 <footer class="wrap"><a href="../index.html#blog">&larr; All posts</a> · <a href="../index.html#work">Portfolio</a></footer>
 <script src="agenda.js" defer></script>
+<script src="playbook.js" defer></script>
 </body>
 </html>
