@@ -1,0 +1,24 @@
+:root{color-scheme:dark}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --ground:#faf9f6; --surface:#ffffff; --surface-2:#f0eee8;
+  --rule:#dedbd3; --rule-2:#c4bfb4;
+  --ink:#202832; --ink-2:#384351; --muted:#526071; --faint:#626d7a;
+  --accent:#946000; --accent-dim:#754b00;
+}
+:root[data-theme="light"] .hero-veil{
+  background:radial-gradient(ellipse 58% 48% at 50% 44%,
+    rgba(250,249,246,.90) 0%,rgba(250,249,246,.62) 52%,rgba(250,249,246,0) 100%);
+}
+:root[data-theme="light"] .contact-status.err{color:#b3342d}
+.theme-toggle{
+  position:absolute;top:18px;right:24px;z-index:40;
+  display:inline-flex;align-items:center;gap:8px;min-height:44px;
+  padding:9px 13px;border:1px solid var(--rule-2);border-radius:6px;
+  background:var(--surface);color:var(--ink-2);cursor:pointer;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;
+}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.theme-toggle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5}
+.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:700px){.theme-toggle{top:12px;right:16px}}
