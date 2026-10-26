@@ -13,12 +13,11 @@
 :root[data-theme="light"] .contact-status.err{color:#b3342d}
 .theme-toggle{
   position:absolute;top:18px;right:24px;z-index:40;
-  display:inline-flex;align-items:center;gap:8px;min-height:44px;
-  padding:9px 13px;border:1px solid var(--rule-2);border-radius:6px;
+  display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;
+  padding:0;border:1px solid var(--rule-2);border-radius:6px;
   background:var(--surface);color:var(--ink-2);cursor:pointer;
-  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;
 }
 .theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
-.theme-toggle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5}
+.theme-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5}
 .theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media(max-width:700px){.theme-toggle{top:12px;right:16px}}
