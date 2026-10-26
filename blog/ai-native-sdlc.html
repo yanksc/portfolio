@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building an AI-native software delivery lifecycle — Yenkai Huang</title>
+<meta name="description" content="A practical approach to AI-native software delivery: shared context, evaluation, governed agent access, and measured rollout across the lifecycle.">
+<meta property="og:title" content="Building an AI-native software delivery lifecycle">
+<meta property="og:description" content="Build the context, review capacity, and release discipline that turn coding-agent speed into reliable delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0e1116; --surface:#151a21; --surface-2:#1b212a;
+  --rule:#232b36; --rule-2:#2e3846;
+  --ink:#e6ebf2; --ink-2:#c6cfdb; --muted:#93a0b1; --faint:#76849a;
+  --accent:#f0b429; --accent-dim:#a8791a;
+  --maxw:860px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:var(--ground); color:var(--ink-2);
+  line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
+a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+code,pre,.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ── Hero: one full viewport, centred, canvas behind ── */
+.hero{
+  position:relative;min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:80px 24px 96px;overflow:hidden;
+}
+#topo{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.hero-veil{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 58% 48% at 50% 44%,
+    rgba(14,17,22,.90) 0%, rgba(14,17,22,.62) 52%, rgba(14,17,22,0) 100%);
+}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:1040px;display:flex;flex-direction:column;align-items:center;gap:0}
+.hero-name{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82rem;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:22px;
+}
+.roleline{
+  font-family:'Archivo',-apple-system,Helvetica,Arial,sans-serif;
+  font-size:clamp(2rem,7.4vw,5rem);font-weight:800;letter-spacing:-.04em;
+  line-height:1.0;color:var(--ink);margin-bottom:28px;
+  display:grid;grid-template-columns:minmax(0,1fr);perspective:900px;
+}
+.roleline>.sizer,.roleline>.live{grid-area:1/1}
+.roleline>.sizer{visibility:hidden;pointer-events:none}
+.roleline>.live{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:0 .16em}
+.flip{display:inline-block;transform-origin:50% 60%;backface-visibility:hidden}
+.flip.out{animation:flipOut .3s cubic-bezier(.55,0,.85,.2) forwards}
+.flip.in{animation:flipIn .38s cubic-bezier(.2,.9,.3,1)}
+@keyframes flipOut{to{transform:rotateX(-85deg);opacity:0}}
+@keyframes flipIn{from{transform:rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+.flip::after{
+  content:"";display:inline-block;width:.42em;height:.82em;background:var(--accent);
+  margin-left:.14em;transform:translateY(.02em);animation:blink 1.15s steps(1,end) infinite;
+}
+.roleline>.sizer .flip::after{animation:none}
+@keyframes blink{0%,48%{opacity:1}49%,100%{opacity:0}}
+.hero-lede{font-size:1.12rem;color:var(--ink-2);max-width:46ch;margin-bottom:34px;text-wrap:balance}
+.hero-contact{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.8rem;color:var(--muted);
+  display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;
+}
+.hero-contact a{color:var(--muted);text-decoration-color:var(--rule-2)}
+.hero-contact a:hover{color:var(--accent)}
+.scrollcue{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--faint);text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.scrollcue:hover{color:var(--accent)}
+.scrollcue span{display:block;width:1px;height:26px;background:linear-gradient(var(--rule-2),transparent);animation:cue 2.4s ease-in-out infinite}
+@keyframes cue{0%,100%{opacity:.35;transform:scaleY(.7)}50%{opacity:1;transform:scaleY(1)}}
+
+/* ── Orchestrated entrance ── */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes settle{from{opacity:0}to{opacity:1}}
+#topo{animation:settle 1100ms ease-out both}
+.hero-inner>*{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both}
+.hero-inner>*:nth-child(1){animation-delay:120ms}
+.hero-inner>*:nth-child(2){animation-delay:250ms}
+.hero-inner>*:nth-child(3){animation-delay:400ms}
+.hero-inner>*:nth-child(4){animation-delay:530ms}
+.scrollcue{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both;animation-delay:760ms}
+
+/* ── Tabs ── */
+.tabbar{position:sticky;top:0;z-index:30;background:var(--ground);border-bottom:1px solid var(--rule)}
+.tablist{max-width:var(--maxw);margin:0 auto;padding:0 24px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tablist::-webkit-scrollbar{display:none}
+.tab{
+  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);padding:16px 13px 13px;cursor:pointer;
+  white-space:nowrap;transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* ── Panels ── */
+.panel{padding:56px 0 112px}
+.panel[hidden]{display:none}
+.lede{font-size:1.02rem;color:var(--muted);max-width:60ch;margin-bottom:40px}
+h2{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);margin:56px 0 20px;padding-bottom:10px;
+  border-bottom:1px solid var(--rule);font-weight:500;
+}
+h2:first-of-type{margin-top:0}
+h3{font-family:'Archivo',sans-serif;font-size:1.12rem;font-weight:700;color:var(--ink);letter-spacing:-.015em;margin-bottom:8px;text-wrap:balance}
+
+/* ── Work cards ── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.card{
+  display:flex;flex-direction:column;background:var(--surface);padding:26px 24px 22px;
+  text-decoration:none;color:inherit;transition:background .18s;
+}
+.card:hover{background:var(--surface-2);color:inherit}
+.card .kicker{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:12px;
+}
+.card p{font-size:.93rem;color:var(--muted);margin-bottom:14px}
+.card .metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.75rem;color:var(--ink-2);line-height:1.55;margin-bottom:14px}
+.card .metric::before{content:"→ ";color:var(--accent)}
+.card .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-top:12px}
+.more{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);flex:none}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--rule-2);color:var(--muted);font-size:.65rem;padding:2px 8px}
+
+/* ── Domain rows ── */
+.domaincards{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.dcard{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  border-bottom:1px solid var(--rule);padding:22px 4px;text-decoration:none;color:inherit;
+  transition:padding-left .18s,background .18s;
+}
+.dcard:hover{padding-left:12px;background:var(--surface);color:inherit}
+.dcard p{font-size:.9rem;color:var(--muted);margin-top:5px}
+.dcard .arrow{color:var(--accent);font-size:1.05rem;flex:none}
+
+/* ── Earlier ── */
+.earlier{padding-left:18px;border-left:1px solid var(--rule-2);margin-bottom:22px}
+.earlier .role{font-weight:600;color:var(--ink);font-size:.98rem}
+.earlier .meta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.71rem;color:var(--faint);letter-spacing:.08em;margin:3px 0 8px}
+.earlier p{font-size:.91rem;color:var(--muted)}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:8px}
+th{
+  text-align:left;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);padding:0 14px 10px 0;border-bottom:1px solid var(--rule-2);font-weight:500;
+}
+td{padding:12px 14px 12px 0;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--muted)}
+td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+.scroller{overflow-x:auto;margin-bottom:28px}
+.depth{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;white-space:nowrap}
+.d-expert{background:var(--accent);color:var(--ground);font-weight:500}
+.d-practiced{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule-2)}
+.d-familiar{background:transparent;color:var(--faint);border:1px solid var(--rule)}
+
+.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:36px}
+.rubric div{background:var(--surface);padding:18px}
+.rubric strong{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.rubric p{font-size:.85rem;color:var(--muted);margin-top:8px}
+
+/* ── For Agents ── */
+.callout{background:var(--surface);border:1px solid var(--rule);padding:24px;margin-bottom:30px}
+.callout p{font-size:.95rem;color:var(--muted)}
+.filelink{
+  display:inline-flex;align-items:center;gap:9px;margin-top:16px;background:var(--accent);color:var(--ground);
+  padding:10px 17px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.76rem;font-weight:500;text-decoration:none;
+}
+.filelink:hover{background:var(--ink);color:var(--ground)}
+.diagram{background:var(--surface);border:1px solid var(--rule);padding:24px 18px;margin-bottom:30px;overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:560px;height:auto}
+.decision{margin-bottom:24px}
+.decision p{font-size:.93rem;color:var(--muted)}
+pre{background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);padding:18px 20px;overflow-x:auto;font-size:.79rem;line-height:1.65;margin-bottom:12px}
+.note{font-size:.87rem;color:var(--muted);margin-bottom:28px;max-width:62ch}
+
+/* ── About ── */
+.about{display:flex;flex-direction:column;gap:18px}
+.about p{font-size:1rem;color:var(--ink-2);max-width:62ch}
+.edu{margin-bottom:17px}
+.edu .school{font-weight:600;color:var(--ink);font-size:.99rem}
+.edu .detail{font-size:.86rem;color:var(--muted)}
+.community{display:flex;flex-direction:column;gap:8px}
+.community li{font-size:.93rem;color:var(--muted);list-style:none;padding-left:20px;position:relative}
+.community li::before{content:"·";position:absolute;left:5px;color:var(--accent);font-weight:700}
+
+/* ── Detail pages ── */
+.backlink{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:inline-block;margin-bottom:34px}
+.backlink:hover{color:var(--accent)}
+.detail-head{padding:60px 0 10px}
+.detail-head h1{font-family:'Archivo',sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.07;color:var(--ink);margin-bottom:16px;max-width:19ch;text-wrap:balance}
+.detail-metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.83rem;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:16px;margin-top:20px;max-width:60ch}
+.detail-metric::before{content:"→ ";color:var(--accent)}
+.detail-body{padding:20px 0 104px}
+.detail-body section{margin-bottom:38px}
+.detail-body h2{border:0;margin:0 0 12px;padding:0}
+.detail-body p{font-size:1.01rem;color:var(--ink-2);max-width:64ch}
+.nextprev{border-top:1px solid var(--rule);padding-top:24px;display:flex;flex-wrap:wrap;gap:10px}
+.nextprev a{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;text-decoration:none;border:1px solid var(--rule-2);padding:10px 14px;color:var(--muted)}
+.nextprev a:hover{border-color:var(--accent);color:var(--accent)}
+
+footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;color:var(--faint)}
+
+@media (max-width:700px){
+  .hero{padding:72px 20px 88px}
+  .cards{grid-template-columns:1fr}
+  .rubric{grid-template-columns:1fr}
+  .panel{padding:40px 0 80px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  /* The entrance animates opacity 0 -> 1 with fill-mode both. Killing the
+     animation without this would leave the whole hero invisible. */
+  #topo,.hero-inner>*,.scrollcue{opacity:1!important;transform:none!important}
+}
+</style>
+<link rel="stylesheet" href="../theme.css">
+<script src="../theme.js"></script>
+<link rel="stylesheet" href="blog.css">
+<meta property="og:type" content="article">
+</head>
+<body>
+<main class="wrap post">
+<article>
+<header class="post-header">
+  <a class="backlink" href="../index.html#blog">&larr; Blog</a>
+  <p class="post-kicker">Engineering systems · AI adoption</p>
+  <h1>Building an AI-native software delivery lifecycle</h1>
+  <p class="post-deck">Coding agents can speed up implementation. The harder work is building the context, review capacity, and release discipline that turn that speed into reliable delivery.</p>
+  <p class="post-meta">By Yenkai Huang · <time datetime="2026-10-26">October 26, 2026</time></p>
+</header>
+<div class="post-body">
+  <p>Giving engineers access to a coding agent is a useful start. It does not, by itself, change how an organization delivers software. If agents produce changes faster than people can review, integrate, and release them, the extra output becomes a queue.</p>
+  <p>My approach to an AI-native software delivery lifecycle starts with the whole loop: intent, specification, implementation, verification, release, and operation. Agents become a default starting point for suitable tasks. People still set intent, decide what good looks like, and own the outcome.</p>
+  <p>The practical question is where an agent can remove a real constraint without moving the cost somewhere less visible. That requires shared capabilities, clear ownership, and evidence from the work itself.</p>
+  <nav class="post-toc" aria-label="In this post"><strong>In this post</strong><ol>
+    <li><a href="#maturity">Progress beyond tool adoption</a></li>
+    <li><a href="#capabilities">Build context and evaluation; adopt the rest</a></li>
+    <li><a href="#workstreams">Run seven connected workstreams</a></li>
+    <li><a href="#priorities">Prioritize MCP connections and agents</a></li>
+    <li><a href="#rollout">Roll out through measured gates</a></li>
+    <li><a href="#measurement">Measure flow, quality, and cost together</a></li>
+    <li><a href="#risks">Plan for the failure modes</a></li>
+  </ol></nav>
+
+  <section id="maturity"><h2>Progress beyond tool adoption</h2>
+  <p>AI-native describes an operating model, rather than a license count. A maturity ladder helps identify the capabilities a team needs next:</p>
+  <dl class="post-ladder">
+    <dt>L0 · Ad hoc</dt><dd>Individuals use whatever tools they can find. Start by publishing an AI stance: approved tools, data rules, access boundaries, and expectations.</dd>
+    <dt>L1 · Assisted</dt><dd>Engineers have a sanctioned agentic editor or CLI, training, and a supported review workflow. Check whether the tools help with real tasks.</dd>
+    <dt>L2 · Connected</dt><dd>Agents can read repository instructions, tickets, documentation, and telemetry through governed tool access. Shared skills replace repeated prompting and manual context transfer.</dd>
+    <dt>L3 · Orchestrated</dt><dd>Agents handle bounded tasks from a specification, such as fixing build failures, filling test gaps, or preparing migrations. Sandboxes and evaluation gates make parallel work reviewable.</dd>
+    <dt>L4 · AI-native</dt><dd>Agents carry defined classes of work across multiple lifecycle stages. Low-risk changes may qualify for automated merge and rollout under explicit policies. People remain accountable for the result.</dd>
+  </dl>
+  <p>Teams can occupy different levels for different workflows. Treat the ladder as a planning aid. Advancement should depend on reliable results, manageable review effort, and stable delivery.</p>
+  </section>
+
+  <section id="capabilities"><h2>Build context and evaluation; adopt the rest</h2>
+  <p>Each stage of delivery needs the same underlying capabilities. When every team assembles its own agent stack, it also takes on identity, tool access, sandboxing, and audit work. A shared platform makes those decisions easier to support and inspect.</p>
+  <ul>
+    <li><strong>Context and knowledge.</strong> Repository instructions, architecture notes, standards, skills, and runbooks tell agents how your product works. Give this material an owner and a review date.</li>
+    <li><strong>Tool access.</strong> A registry and governed MCP gateway give agents a consistent route to approved systems, with scoped credentials and audit logs.</li>
+    <li><strong>Agent runtime.</strong> Sandboxed workspaces let background agents execute and test changes within clear boundaries.</li>
+    <li><strong>Identity and guardrails.</strong> Access policies, short-lived credentials, and review requirements define what an agent may do.</li>
+    <li><strong>Evaluation and quality gates.</strong> Representative tasks, tests, and explicit pass criteria establish whether an agent is doing useful work.</li>
+    <li><strong>Measurement.</strong> Delivery telemetry connects adoption to lead time, stability, human effort, and cost.</li>
+  </ul>
+  <p>My default is to build the parts that encode knowledge only your organization has: product context and domain-specific evaluations. Buy or adopt established tooling for coding, runtime, review, identity, and observability where it meets your requirements. Extend existing CI and release systems before adding parallel infrastructure.</p>
+  <p>A team plugin can package the last mile: repository configuration, reusable skills, review rules, and runbooks. Your evaluation set can capture golden tasks, expected behavior, and failure cases. Those assets improve as the team learns; they should stay versioned alongside the work.</p>
+  </section>
+
+  <section id="workstreams"><h2>Run seven connected workstreams</h2>
+  <p>Assign an outcome and an accountable owner to each workstream. Choose targets after measuring a baseline. The examples below describe what to improve, rather than prescribing the same numerical goal for every team.</p>
+  <h3>1. Guardrails and AI stance</h3><p>Make the supported path clear. Publish approved tools and data policies, broker agent access through governed connections, and expose spend. Track policy coverage, credential hygiene, audit coverage, and cost per completed change.</p>
+  <h3>2. Context and agent readiness</h3><p>Give agents the information needed to finish a task without a person repeatedly relaying it. Track repository instruction coverage, end-to-end completion on representative tasks, and human intervention per task.</p>
+  <h3>3. Intent to specification</h3><p>Turn an idea into an agent-ready brief with a problem statement, acceptance criteria, constraints, and a verification plan. Measure time to an approved spec, first-pass acceptance, and rework. Let product and design partners prototype bounded changes within the same review process.</p>
+  <h3>4. Specification to pull request</h3><p>Help agents produce small, understandable changes that reviewers can verify. Measure review wait time, review effort, PR size, and rework. Introduce automated merge only for a narrow class with proven checks and a clear owner.</p>
+  <h3>5. Agentic quality and CI</h3><p>Use agents to investigate build failures, improve tests, and repair repeatable problems. Track flaky tests, remediation time, evaluation pass rates, and change-failure rate. More generated tests are useful only when they catch meaningful failures.</p>
+  <h3>6. Release to recovery</h3><p>Carry agent assistance through rollout and operation. Start with release verification and first-draft incident triage. Use progressive delivery and rehearsed rollback paths; measure deployment wait time, recovery time, and the usefulness of triage output.</p>
+  <h3>7. People and measurement</h3><p>Give teams training, a place to share working practices, and a recurring review of outcomes. A shared enablement owner can maintain the platform while local champions bring feedback from delivery teams. Size that effort to the organization and its bottlenecks.</p>
+  </section>
+
+  <section id="priorities"><h2>Prioritize MCP connections and agents</h2>
+  <p>A tool catalog can grow faster than the value it creates. Rank candidates by the work they improve, the frequency of that work, and the risk they introduce. The playbook uses this planning heuristic:</p>
+  <div class="post-formula" aria-label="Priority formula">Priority = (Reach × Time saved × Bottleneck weight × Confidence) ÷ (Effort × Risk)</div>
+  <p><strong>Reach</strong> is the number of relevant uses over a consistent period. <strong>Time saved</strong> comes from a sample of real tasks. <strong>Bottleneck weight</strong> reflects how much of delivery time sits in that stage. <strong>Confidence</strong> captures the strength of the evidence. <strong>Effort</strong> includes rollout and ongoing support; <strong>risk</strong> reflects permissions and the consequences of a mistake.</p>
+  <p>Use consistent scales across candidates and revisit the inputs after a pilot. The score is a way to make assumptions visible, not a validated prediction of return.</p>
+  <p>Start with connections that supply essential context: source control, issue tracking, documentation, and observability. Add design and team discussions where they carry decisions an agent needs. Bring in logs, paging, and deployment state as operational use cases mature. Build a custom MCP server when important domain information is unavailable through an existing integration.</p>
+  <p>Begin with read access wherever possible. Treat PR creation, comments, deployment, and production changes as separate permission decisions. Route release actions through the established pipeline and require review at meaningful trust boundaries. Tool descriptions and tool output remain untrusted input.</p>
+  <p>The strongest early agent candidates run frequently, have a bounded scope, and produce an output someone can verify: first-pass code review, build-failure investigation, incident summaries, and ticket-to-PR work from a clear specification. Expand into open-ended feature work when evaluations and review capacity support it.</p>
+  </section>
+
+  <section id="rollout"><h2>Roll out through measured gates</h2>
+  <p>A calendar is useful for coordination, but passing a date does not prove readiness. I prefer four phases whose pace follows the evidence:</p>
+  <ol class="post-phases">
+    <li><strong>Establish foundations.</strong> Publish the AI stance, provide supported tools, define access policies, assign owners, and measure delivery by stage. <em>Gate:</em> the baseline exists and teams can explain the rules.</li>
+    <li><strong>Connect the workflow.</strong> Add repository instructions, shared skills, essential MCP connections, AI-assisted review, and build-failure assistance. <em>Gate:</em> representative tasks work end to end and review capacity is keeping up.</li>
+    <li><strong>Orchestrate bounded work.</strong> Introduce spec-driven background tasks, an initial low-risk merge class, progressive delivery, and triage assistance. <em>Gate:</em> flow improves while stability stays at or above the agreed baseline.</li>
+    <li><strong>Expand proven work classes.</strong> Extend agent ownership across suitable stages, put domain evaluations into CI, and manage cost per completed change. <em>Gate:</em> the gains repeat across real delivery work without increasing recovery burden.</li>
+  </ol>
+  <p>At each review, decide whether to continue, slow down, or hold. A missed quality guardrail should pause expansion while the team investigates. Use the longest queue in the lifecycle to decide where the next investment goes.</p>
+  </section>
+
+  <section id="measurement"><h2>Measure flow, quality, and cost together</h2>
+  <p>Adoption tells you whether people are trying a tool. It does not tell you whether customers receive useful changes sooner. Measure at the level of the team that delivers together, and compare work of similar scope.</p>
+  <ul>
+    <li><strong>Adoption and proficiency:</strong> active use, agent-assisted work, and the workflows people can complete reliably. Treat these as inputs and learning signals.</li>
+    <li><strong>Flow:</strong> lead time split into preparation, coding, review, and deployment; queue time; and human intervention. These reveal where the constraint moved.</li>
+    <li><strong>Stability:</strong> change-failure rate, recovery time, rework, incidents, and PR size. Pair these guardrails with every speed goal.</li>
+    <li><strong>Economics:</strong> agent and model spend per completed change, plus the human effort needed to review, repair, and operate it.</li>
+    <li><strong>Experience:</strong> whether builders trust the workflow and would choose it for their next task. Use feedback to investigate friction, alongside delivery evidence.</li>
+  </ul>
+  <p>Avoid rewarding lines generated or AI-authored code share on their own. Both can rise while useful delivery gets worse. Use representative task evaluations and delivery telemetry to test whether perceived gains survive contact with the full workflow.</p>
+  </section>
+
+  <section id="risks"><h2>Plan for the failure modes</h2>
+  <p>The most consequential failure is faster implementation feeding a system that cannot absorb it. Keep changes small, make review expectations explicit, and improve release capacity before expanding generation.</p>
+  <p>Access creates a second set of risks. Use scoped, expiring credentials, registered integrations, and sandboxed execution. Review writes that cross trust boundaries. Keep the agent’s ability to read external material separate from its authority to act on internal systems.</p>
+  <p>Context can fail quietly. An outdated runbook or ownerless instruction file can repeatedly steer agents toward the wrong result. Give agent-facing knowledge owners, review dates, and a path for correcting it after a failed task.</p>
+  <p>Process and cost need limits too. A spec-driven workflow can generate more documents than anyone can review, while parallel agents can accumulate spend without finishing work. Keep the specification proportionate to the change, retain independent checks, and review total cost against completed outcomes.</p>
+  <p>The aim is a delivery system that learns. Start with a bounded workflow, make the result inspectable, and expand when the evidence supports it. The strongest asset is the shared understanding of how to turn intent into a reliable change.</p>
+  </section>
+
+  <aside class="post-sources" aria-labelledby="sources"><h2 id="sources">Source and further reading</h2>
+  <p>Adapted from my <a href="https://yanksc.github.io/ai-native-sdlc-playbook/">AI-Native SDLC Playbook</a>. This edition generalizes the audience, staffing, targets, and rollout schedule. The frameworks are proposed operating guidance, not universal benchmarks.</p>
+  <p>The original playbook draws on <a href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model">DORA’s AI Capabilities Model</a>, the <a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report">2025 DORA Report</a>, and METR’s <a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/">2025 developer study</a> and <a href="https://metr.org/blog/2026-02-24-uplift-update/">2026 follow-up</a>. The playbook also links vendor telemetry and a vendor summary of MCP security risks; those are distinct from the primary research.</p>
+  <p>A personal perspective, not affiliated with or endorsed by any employer. Adapted text licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+  </aside>
+</div>
+</article>
+
+</main>
+<footer class="wrap"><a href="../index.html#blog">&larr; All posts</a> · <a href="../index.html#work">Portfolio</a></footer>
+</body>
+</html>

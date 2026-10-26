@@ -278,7 +278,7 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
 </section>
 
 <nav class="tabbar" aria-label="Sections">
-  <div class="tablist" role="tablist"><button role="tab" class="tab" id="tab-work" data-tab="work" aria-controls="panel-work" aria-selected="true" tabindex="0">Work</button><button role="tab" class="tab" id="tab-stack" data-tab="stack" aria-controls="panel-stack" aria-selected="false" tabindex="-1">Stack</button><button role="tab" class="tab" id="tab-agents" data-tab="agents" aria-controls="panel-agents" aria-selected="false" tabindex="-1">For Agents</button><button role="tab" class="tab" id="tab-about" data-tab="about" aria-controls="panel-about" aria-selected="false" tabindex="-1">Background</button></div>
+  <div class="tablist" role="tablist"><button role="tab" class="tab" id="tab-work" data-tab="work" aria-controls="panel-work" aria-selected="true" tabindex="0">Work</button><button role="tab" class="tab" id="tab-stack" data-tab="stack" aria-controls="panel-stack" aria-selected="false" tabindex="-1">Stack</button><button role="tab" class="tab" id="tab-agents" data-tab="agents" aria-controls="panel-agents" aria-selected="false" tabindex="-1">For Agents</button><button role="tab" class="tab" id="tab-blog" data-tab="blog" aria-controls="panel-blog" aria-selected="false" tabindex="-1">Blog</button><button role="tab" class="tab" id="tab-about" data-tab="about" aria-controls="panel-about" aria-selected="false" tabindex="-1">Background</button></div>
 </nav>
 
 <section role="tabpanel" class="panel wrap" id="panel-work" aria-labelledby="tab-work">
@@ -363,7 +363,21 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
           <div class="tags"><span class="tag">AI governance</span><span class="tag">Policy</span><span class="tag">Classification</span></div>
           <span class="more">Read &rarr;</span>
         </div>
-      </a></div></section><section role="tabpanel" class="panel wrap" id="panel-stack" aria-labelledby="tab-stack" hidden>
+      </a></div></section><section role="tabpanel" class="panel wrap" id="panel-blog" aria-labelledby="tab-blog" hidden>
+  <p class="lede">Notes on building AI platforms and the engineering systems around them.</p>
+  <div class="domaincards">
+    <a class="dcard" href="blog/ai-native-sdlc.html">
+      <div>
+        <p class="mono" style="font-size:.7rem;margin:0 0 10px;color:var(--faint)">October 26, 2026 · Engineering systems</p>
+        <h3>Building an AI-native software delivery lifecycle</h3>
+        <p>Coding agents can speed up implementation. Context, review capacity, and release discipline turn that speed into reliable delivery.</p>
+      </div>
+      <span class="arrow" aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+</section>
+
+<section role="tabpanel" class="panel wrap" id="panel-stack" aria-labelledby="tab-stack" hidden>
     <p class="lede">Three domains, with self-assessed depth against an explicit rubric rather than a logo wall. I'd rather be checked on this than flatter myself. Open a domain for how I actually use it.</p>
     <div class="rubric"><div><strong>Expert</strong><p>Defined architecture and requirements, made the build/buy call, can defend the tradeoffs at a whiteboard.</p></div><div><strong>Practiced</strong><p>Wrote PRDs against it and worked daily with the engineers building it.</p></div><div><strong>Familiar</strong><p>Evaluated it, benchmarked it, or used it as reference.</p></div></div>
     <h2>Domains</h2>
@@ -516,7 +530,10 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
   });
   function fromHash(){
     var id=(location.hash||'').replace('#','');
-    if(tabs.some(function(t){return t.dataset.tab===id;}))select(id,false);
+    if(tabs.some(function(t){return t.dataset.tab===id;})){
+      select(id,false);
+      if(id==='blog')requestAnimationFrame(function(){document.querySelector('.tabbar').scrollIntoView();});
+    }
   }
   window.addEventListener('hashchange',fromHash);
   fromHash();
