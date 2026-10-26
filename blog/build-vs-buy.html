@@ -237,6 +237,7 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
 </head>
 <body>
 <main class="wrap post">
+<aside class="post-agenda"><nav class="post-toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#cost-optimization">Kubernetes cost optimization</a></li><li><a href="#agent-runtimes">Managed agent runtimes</a></li><li><a href="#sandboxes">Ephemeral sandboxes</a></li><li><a href="#observability">Observability and AIOps</a></li></ol></nav></aside>
 <article>
 <header class="post-header">
   <a class="backlink" href="../index.html#blog">&larr; Blog</a>
@@ -247,18 +248,14 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
 </header>
 <div class="post-body post-wide">
   <p>Part of a platform PM's job is knowing when not to build. These are categories I've evaluated seriously, with the positioning I formed at the time. Reasonable people disagree, and these markets move fast.</p>
-  <section aria-labelledby="category-notes">
-    <h2 id="category-notes">Category notes</h2>
-    <div class="scroller post-comparison" role="region" aria-label="Products, categories, and my evaluation notes" tabindex="0">
-<table>
-      <thead><tr><th>Product</th><th>Category</th><th>Positioning as I read it</th></tr></thead>
-      <tbody><tr><td>ScaleOps</td><td>K8s cost optimization</td><td>Strong automated right-sizing. Optimizes toward observed steady state, which is the right default for most fleets.</td></tr><tr><td>Cast.ai</td><td>K8s cost optimization</td><td>Broad automation and good bin-packing. Best fit where infrastructure policy can be delegated wholesale.</td></tr><tr><td>Zesty</td><td>K8s cost optimization</td><td>Commitment and capacity management angle. Value concentrates on the purchasing side rather than workload shape.</td></tr><tr><td>AWS AgentCore</td><td>Managed agent runtime</td><td>Managed runtime with the depth of the AWS control plane behind it. Strongest where you're already all-in on AWS identity.</td></tr><tr><td>Anthropic Agents API</td><td>Managed agent runtime</td><td>Cleanest developer ergonomics of the group. Optimizes for time-to-first-agent over infrastructure control.</td></tr><tr><td>Fly.io Sprites</td><td>Ephemeral sandboxes</td><td>Fast, lightweight isolated execution. Attractive when the unit of work is short-lived and stateless.</td></tr><tr><td>Vercel Sandbox</td><td>Ephemeral sandboxes</td><td>Tight integration with an existing deploy workflow. Compelling if your app already lives there.</td></tr><tr><td>Datadog</td><td>Observability / AIOps</td><td>Deepest signal coverage in the category. The question is usually cost curve and data gravity, not capability.</td></tr></tbody>
-    </table>
-    </div>
-  </section>
+<section id="cost-optimization"><h2>Kubernetes cost optimization</h2><div class="product-note"><h3>ScaleOps</h3><p>Strong automated right-sizing. Optimizes toward observed steady state, which is the right default for most fleets.</p></div><div class="product-note"><h3>Cast.ai</h3><p>Broad automation and good bin-packing. Best fit where infrastructure policy can be delegated wholesale.</p></div><div class="product-note"><h3>Zesty</h3><p>Commitment and capacity management angle. Value concentrates on the purchasing side rather than workload shape.</p></div></section>
+<section id="agent-runtimes"><h2>Managed agent runtimes</h2><div class="product-note"><h3>AWS AgentCore</h3><p>Managed runtime with the depth of the AWS control plane behind it. Strongest where you're already all-in on AWS identity.</p></div><div class="product-note"><h3>Anthropic Agents API</h3><p>Cleanest developer ergonomics of the group. Optimizes for time-to-first-agent over infrastructure control.</p></div></section>
+<section id="sandboxes"><h2>Ephemeral sandboxes</h2><div class="product-note"><h3>Fly.io Sprites</h3><p>Fast, lightweight isolated execution. Attractive when the unit of work is short-lived and stateless.</p></div><div class="product-note"><h3>Vercel Sandbox</h3><p>Tight integration with an existing deploy workflow. Compelling if your app already lives there.</p></div></section>
+<section id="observability"><h2>Observability and AIOps</h2><div class="product-note"><h3>Datadog</h3><p>Deepest signal coverage in the category. The question is usually cost curve and data gravity, not capability.</p></div></section>
 </div>
 </article>
 </main>
 <footer class="wrap"><a href="../index.html#blog">&larr; All posts</a> · <a href="../index.html#stack">Stack</a></footer>
+<script src="agenda.js" defer></script>
 </body>
 </html>
