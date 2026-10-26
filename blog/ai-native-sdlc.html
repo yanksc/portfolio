@@ -1,320 +1,313 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Building an AI-native software delivery lifecycle — Yenkai Huang</title>
-<meta name="description" content="A practical approach to AI-native software delivery: shared context, evaluation, governed agent access, and measured rollout across the lifecycle.">
-<meta property="og:title" content="Building an AI-native software delivery lifecycle">
-<meta property="og:description" content="Build the context, review capacity, and release discipline that turn coding-agent speed into reliable delivery.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="AI-Native SDLC Playbook">
+<meta property="og:description" content="Capabilities, workstreams with OKRs, MCP and agent prioritization, and a proposed roadmap for engineering teams.">
+<title>AI-Native SDLC Playbook</title>
+<meta name="description" content="A practical guide to an AI-native software delivery lifecycle: capabilities, workstreams, MCP and agents, and measured rollout gates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Schibsted+Grotesk:wght@600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
-:root{
-  --ground:#0e1116; --surface:#151a21; --surface-2:#1b212a;
-  --rule:#232b36; --rule-2:#2e3846;
-  --ink:#e6ebf2; --ink-2:#c6cfdb; --muted:#93a0b1; --faint:#76849a;
-  --accent:#f0b429; --accent-dim:#a8791a;
-  --maxw:860px;
+/* Layout: a CI-run style rail of sections on the left, a 68ch reading column on the right; diagrams and tables scroll inside their own frames. */
+:root {
+  --bg: #f2f4f1;
+  --surface: #ffffff;
+  --ink: #15202a;
+  --muted: #56636d;
+  --rule: #d5dad4;
+  --line-strong: #9aa5a0;
+  --tint: #e7ebe6;
+  --accent: #2a54c6;
+  --accent-soft: #e2e8f8;
+  --on-accent: #ffffff;
+  --amber: #9a5f0c;
+  --amber-soft: #f6e9d3;
+  --good: #2c7449;
+  --good-soft: #e1f0e6;
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{
-  font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
-  background:var(--ground); color:var(--ink-2);
-  line-height:1.62; font-size:16px; -webkit-font-smoothing:antialiased;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1316; --surface: #151c21; --ink: #e4e9e5; --muted: #9aa6ad; --rule: #28323a; --line-strong: #56636d;
+    --tint: #1b242a; --accent: #8aa6ff; --accent-soft: #1d2848; --on-accent: #0e1316;
+    --amber: #e3ad58; --amber-soft: #3a2b14; --good: #72c493; --good-soft: #15301f;
+    color-scheme: dark;
+  }
 }
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
-a:hover{color:var(--accent);text-decoration-color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
-code,pre,.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:root[data-theme="dark"] {
+  --bg: #0e1316; --surface: #151c21; --ink: #e4e9e5; --muted: #9aa6ad; --rule: #28323a; --line-strong: #56636d;
+  --tint: #1b242a; --accent: #8aa6ff; --accent-soft: #1d2848; --on-accent: #0e1316;
+  --amber: #e3ad58; --amber-soft: #3a2b14; --good: #72c493; --good-soft: #15301f;
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+a { color: var(--accent); text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 56px;
+}
 
-/* ── Hero: one full viewport, centred, canvas behind ── */
-.hero{
-  position:relative;min-height:100svh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;
-  padding:80px 24px 96px;overflow:hidden;
+/* Hero */
+.hero { display: grid; gap: 20px; padding-bottom: 40px; border-bottom: 1px solid var(--rule); }
+.eyebrow { margin: 0; font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(38px, 6vw, 60px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
-#topo{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
-.hero-veil{
-  position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse 58% 48% at 50% 44%,
-    rgba(14,17,22,.90) 0%, rgba(14,17,22,.62) 52%, rgba(14,17,22,0) 100%);
-}
-.hero-inner{position:relative;z-index:2;width:100%;max-width:1040px;display:flex;flex-direction:column;align-items:center;gap:0}
-.hero-name{
-  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82rem;letter-spacing:.24em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:22px;
-}
-.roleline{
-  font-family:'Archivo',-apple-system,Helvetica,Arial,sans-serif;
-  font-size:clamp(2rem,7.4vw,5rem);font-weight:800;letter-spacing:-.04em;
-  line-height:1.0;color:var(--ink);margin-bottom:28px;
-  display:grid;grid-template-columns:minmax(0,1fr);perspective:900px;
-}
-.roleline>.sizer,.roleline>.live{grid-area:1/1}
-.roleline>.sizer{visibility:hidden;pointer-events:none}
-.roleline>.live{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:0 .16em}
-.flip{display:inline-block;transform-origin:50% 60%;backface-visibility:hidden}
-.flip.out{animation:flipOut .3s cubic-bezier(.55,0,.85,.2) forwards}
-.flip.in{animation:flipIn .38s cubic-bezier(.2,.9,.3,1)}
-@keyframes flipOut{to{transform:rotateX(-85deg);opacity:0}}
-@keyframes flipIn{from{transform:rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
-.flip::after{
-  content:"";display:inline-block;width:.42em;height:.82em;background:var(--accent);
-  margin-left:.14em;transform:translateY(.02em);animation:blink 1.15s steps(1,end) infinite;
-}
-.roleline>.sizer .flip::after{animation:none}
-@keyframes blink{0%,48%{opacity:1}49%,100%{opacity:0}}
-.hero-lede{font-size:1.12rem;color:var(--ink-2);max-width:46ch;margin-bottom:34px;text-wrap:balance}
-.hero-contact{
-  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.8rem;color:var(--muted);
-  display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;
-}
-.hero-contact a{color:var(--muted);text-decoration-color:var(--rule-2)}
-.hero-contact a:hover{color:var(--accent)}
-.scrollcue{
-  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:2;
-  font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--faint);text-decoration:none;
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-}
-.scrollcue:hover{color:var(--accent)}
-.scrollcue span{display:block;width:1px;height:26px;background:linear-gradient(var(--rule-2),transparent);animation:cue 2.4s ease-in-out infinite}
-@keyframes cue{0%,100%{opacity:.35;transform:scaleY(.7)}50%{opacity:1;transform:scaleY(1)}}
+.dek { margin: 0; max-width: 60ch; font-size: 20px; line-height: 1.5; color: var(--ink); }
+.run { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; margin: 4px 0 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 13px; }
+.run li { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+.run li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.run .arrow { border: 0; background: none; padding: 0 2px; color: var(--muted); }
+.run .arrow::before { display: none; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px 32px; margin: 12px 0 0; }
+.facts div { border-top: 2px solid var(--ink); padding-top: 10px; min-width: 0; }
+.facts dt { font-family: var(--font-display); font-weight: 700; font-size: 32px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.facts dd { margin: 4px 0 0; font-size: 15px; color: var(--muted); line-height: 1.45; }
 
-/* ── Orchestrated entrance ── */
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes settle{from{opacity:0}to{opacity:1}}
-#topo{animation:settle 1100ms ease-out both}
-.hero-inner>*{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both}
-.hero-inner>*:nth-child(1){animation-delay:120ms}
-.hero-inner>*:nth-child(2){animation-delay:250ms}
-.hero-inner>*:nth-child(3){animation-delay:400ms}
-.hero-inner>*:nth-child(4){animation-delay:530ms}
-.scrollcue{animation:rise 560ms cubic-bezier(.2,.75,.3,1) both;animation-delay:760ms}
+/* Layout */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 1000px) { .layout { grid-template-columns: 196px minmax(0, 1fr); gap: 56px; } }
+main { min-width: 0; max-width: 860px; }
 
-/* ── Tabs ── */
-.tabbar{position:sticky;top:0;z-index:30;background:var(--ground);border-bottom:1px solid var(--rule)}
-.tablist{max-width:var(--maxw);margin:0 auto;padding:0 24px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
-.tablist::-webkit-scrollbar{display:none}
-.tab{
-  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
-  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--faint);padding:16px 13px 13px;cursor:pointer;
-  white-space:nowrap;transition:color .15s,border-color .15s;
+/* Section rail */
+.toc { padding-top: 24px; min-width: 0; }
+.toc p { margin: 0 0 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
+.toc a { display: block; white-space: nowrap; text-decoration: none; color: var(--ink); font-size: 15px; padding: 4px 10px; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+.toc a[aria-current="true"] { border-color: var(--accent); color: var(--accent); }
+@media (min-width: 1000px) {
+  .toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; padding-top: 56px; }
+  .toc ol { flex-direction: column; gap: 0; overflow: visible; position: relative; }
+  .toc ol::before { content: ""; position: absolute; left: 4px; top: 12px; bottom: 12px; width: 1px; background: var(--rule); }
+  .toc li { position: relative; padding-left: 20px; }
+  .toc li::before { content: ""; position: absolute; left: 0; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--line-strong); }
+  .toc li:has(a[aria-current="true"])::before { background: var(--accent); border-color: var(--accent); }
+  .toc a { border: 0; background: none; padding: 3px 0; font-size: 15px; color: var(--muted); }
+  .toc a:hover { color: var(--ink); }
+  .toc a[aria-current="true"] { color: var(--ink); font-weight: 600; }
 }
-.tab:hover{color:var(--ink-2)}
-.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 
-/* ── Panels ── */
-.panel{padding:56px 0 112px}
-.panel[hidden]{display:none}
-.lede{font-size:1.02rem;color:var(--muted);max-width:60ch;margin-bottom:40px}
-h2{
-  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--faint);margin:56px 0 20px;padding-bottom:10px;
-  border-bottom:1px solid var(--rule);font-weight:500;
-}
-h2:first-of-type{margin-top:0}
-h3{font-family:'Archivo',sans-serif;font-size:1.12rem;font-weight:700;color:var(--ink);letter-spacing:-.015em;margin-bottom:8px;text-wrap:balance}
+/* Sections and type */
+section { padding-top: 56px; scroll-margin-top: 16px; }
+section + section { margin-top: 8px; border-top: 1px solid var(--rule); }
+h2 { margin: 0 0 16px; font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.15; letter-spacing: -0.015em; text-wrap: balance; }
+h3 { margin: 36px 0 12px; font-family: var(--font-display); font-weight: 600; font-size: 20px; line-height: 1.25; text-wrap: balance; }
+main p, main li { max-width: 68ch; }
+main p { margin: 0 0 16px; }
+.lead { font-size: 19px; }
+.key { padding-left: 1.2em; margin: 0 0 16px; display: grid; gap: 10px; }
+.rules { padding-left: 1.4em; margin: 0 0 24px; display: grid; gap: 8px; }
+.note { font-size: 15px; color: var(--muted); }
+strong { font-weight: 600; }
+.sr-hide { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
-/* ── Work cards ── */
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
-.card{
-  display:flex;flex-direction:column;background:var(--surface);padding:26px 24px 22px;
-  text-decoration:none;color:inherit;transition:background .18s;
-}
-.card:hover{background:var(--surface-2);color:inherit}
-.card .kicker{
-  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--faint);margin-bottom:12px;
-}
-.card p{font-size:.93rem;color:var(--muted);margin-bottom:14px}
-.card .metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.75rem;color:var(--ink-2);line-height:1.55;margin-bottom:14px}
-.card .metric::before{content:"→ ";color:var(--accent)}
-.card .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-top:12px}
-.more{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);flex:none}
-.tags{display:flex;flex-wrap:wrap;gap:5px}
-.tag{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--surface-2);border:1px solid var(--rule-2);color:var(--muted);font-size:.65rem;padding:2px 8px}
+/* Tables */
+.scroll { overflow-x: auto; margin: 8px 0 20px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 680px; font-size: 15px; line-height: 1.45; }
+th { text-align: left; font-family: var(--font-mono); font-weight: 600; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 12px 14px 10px; border-bottom: 1.5px solid var(--line-strong); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; }
+.chip { display: inline-block; font-family: var(--font-mono); font-weight: 600; font-size: 11.5px; letter-spacing: 0.02em; padding: 1px 7px; border-radius: 4px; border: 1px solid; white-space: nowrap; }
+.chip.build { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+.chip.buy { color: var(--amber); background: var(--amber-soft); border-color: var(--amber); }
+.chip.adopt { color: var(--good); background: var(--good-soft); border-color: var(--good); }
+.tier { display: inline-block; font-family: var(--font-mono); font-size: 12px; padding: 1px 7px; border: 1px solid var(--line-strong); border-radius: 4px; white-space: nowrap; }
 
-/* ── Domain rows ── */
-.domaincards{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
-.dcard{
-  display:flex;justify-content:space-between;align-items:center;gap:20px;
-  border-bottom:1px solid var(--rule);padding:22px 4px;text-decoration:none;color:inherit;
-  transition:padding-left .18s,background .18s;
-}
-.dcard:hover{padding-left:12px;background:var(--surface);color:inherit}
-.dcard p{font-size:.9rem;color:var(--muted);margin-top:5px}
-.dcard .arrow{color:var(--accent);font-size:1.05rem;flex:none}
+/* Figures */
+figure { margin: 24px 0 24px; }
+.frame { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 16px; }
+figcaption { margin-top: 10px; font-size: 15px; color: var(--muted); max-width: 68ch; }
+figcaption strong { color: var(--ink); }
+svg.diagram { display: block; width: 100%; min-width: 640px; height: auto; font-family: var(--font-body); }
+.diagram .t { fill: var(--ink); }
+.diagram .q { fill: var(--muted); }
+.diagram .box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.25; }
+.diagram .hot { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.diagram .band { fill: var(--tint); stroke: var(--line-strong); stroke-width: 1; }
+.diagram .tint { fill: var(--tint); }
+.diagram .edge { stroke: var(--muted); stroke-width: 1.25; }
+.diagram .faint { stroke: var(--rule); stroke-width: 1.25; }
+.diagram .arrowhead { fill: var(--muted); }
+.diagram .dot { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; }
+.diagram .dot-hot { fill: var(--accent); stroke: var(--accent); }
+.diagram .gate { fill: var(--amber); stroke: var(--amber); }
 
-/* ── Earlier ── */
-.earlier{padding-left:18px;border-left:1px solid var(--rule-2);margin-bottom:22px}
-.earlier .role{font-weight:600;color:var(--ink);font-size:.98rem}
-.earlier .meta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.71rem;color:var(--faint);letter-spacing:.08em;margin:3px 0 8px}
-.earlier p{font-size:.91rem;color:var(--muted)}
+/* Workstreams */
+.ws { list-style: none; margin: 8px 0 24px; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.ws > li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--rule); max-width: none; }
+.ws-id { width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid var(--ink); border-radius: 50%; font-family: var(--font-mono); font-weight: 600; font-size: 15px; }
+.ws h3 { margin: 2px 0 6px; font-size: 19px; }
+.ws p { margin: 0 0 8px; }
+.label { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-right: 8px; }
+.krs { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: 16px; }
 
-/* ── Tables ── */
-table{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:8px}
-th{
-  text-align:left;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.65rem;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--faint);padding:0 14px 10px 0;border-bottom:1px solid var(--rule-2);font-weight:500;
-}
-td{padding:12px 14px 12px 0;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--muted)}
-td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
-.scroller{overflow-x:auto;margin-bottom:28px}
-.depth{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;white-space:nowrap}
-.d-expert{background:var(--accent);color:var(--ground);font-weight:500}
-.d-practiced{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--rule-2)}
-.d-familiar{background:transparent;color:var(--faint);border:1px solid var(--rule)}
+/* Formula and definitions */
+.formula { margin: 8px 0 16px; padding: 14px 16px; overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px; font-family: var(--font-mono); font-size: 14.5px; line-height: 1.6; white-space: pre; }
+.defs { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0 0 16px; font-size: 16px; max-width: 72ch; }
+.defs dt { font-family: var(--font-mono); font-size: 13.5px; padding-top: 2px; }
+.defs dd { margin: 0; color: var(--muted); min-width: 0; }
+@media (max-width: 520px) { .defs { grid-template-columns: minmax(0, 1fr); } .defs dd { margin-bottom: 6px; } }
 
-.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:36px}
-.rubric div{background:var(--surface);padding:18px}
-.rubric strong{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
-.rubric p{font-size:.85rem;color:var(--muted);margin-top:8px}
+/* Calculator */
+.calc { margin: 12px 0 24px; }
+.calc-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 10px; }
+.calc-bar p { margin: 0; font-size: 15px; color: var(--muted); }
+.calc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { font: 600 14px/1 var(--font-body); padding: 9px 13px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.calc table { min-width: 860px; }
+.calc td { padding: 8px 10px; vertical-align: middle; }
+.calc td:first-child { font-weight: 400; }
+.calc input { font: 14px var(--font-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 7px; width: 74px; font-variant-numeric: tabular-nums; }
+.calc input.name { width: 100%; min-width: 220px; font-family: var(--font-body); font-size: 15px; }
+.calc input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent-soft); }
+.rank { font-family: var(--font-mono); font-size: 13px; color: var(--muted); text-align: center; width: 36px; }
+.score { width: 150px; }
+.score-val { font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 14px; }
+.meter { height: 6px; margin-top: 4px; border-radius: 3px; background: var(--tint); overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--accent); }
+.remove { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 4px 6px; cursor: pointer; border-radius: 4px; }
+.remove:hover { color: var(--ink); background: var(--tint); }
 
-/* ── For Agents ── */
-.callout{background:var(--surface);border:1px solid var(--rule);padding:24px;margin-bottom:30px}
-.callout p{font-size:.95rem;color:var(--muted)}
-.filelink{
-  display:inline-flex;align-items:center;gap:9px;margin-top:16px;background:var(--accent);color:var(--ground);
-  padding:10px 17px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.76rem;font-weight:500;text-decoration:none;
-}
-.filelink:hover{background:var(--ink);color:var(--ground)}
-.diagram{background:var(--surface);border:1px solid var(--rule);padding:24px 18px;margin-bottom:30px;overflow-x:auto}
-.diagram svg{display:block;width:100%;min-width:560px;height:auto}
-.decision{margin-bottom:24px}
-.decision p{font-size:.93rem;color:var(--muted)}
-pre{background:var(--surface);border:1px solid var(--rule);color:var(--ink-2);padding:18px 20px;overflow-x:auto;font-size:.79rem;line-height:1.65;margin-bottom:12px}
-.note{font-size:.87rem;color:var(--muted);margin-bottom:28px;max-width:62ch}
-
-/* ── About ── */
-.about{display:flex;flex-direction:column;gap:18px}
-.about p{font-size:1rem;color:var(--ink-2);max-width:62ch}
-.edu{margin-bottom:17px}
-.edu .school{font-weight:600;color:var(--ink);font-size:.99rem}
-.edu .detail{font-size:.86rem;color:var(--muted)}
-.community{display:flex;flex-direction:column;gap:8px}
-.community li{font-size:.93rem;color:var(--muted);list-style:none;padding-left:20px;position:relative}
-.community li::before{content:"·";position:absolute;left:5px;color:var(--accent);font-weight:700}
-
-/* ── Detail pages ── */
-.backlink{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-decoration:none;display:inline-block;margin-bottom:34px}
-.backlink:hover{color:var(--accent)}
-.detail-head{padding:60px 0 10px}
-.detail-head h1{font-family:'Archivo',sans-serif;font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.07;color:var(--ink);margin-bottom:16px;max-width:19ch;text-wrap:balance}
-.detail-metric{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.83rem;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:16px;margin-top:20px;max-width:60ch}
-.detail-metric::before{content:"→ ";color:var(--accent)}
-.detail-body{padding:20px 0 104px}
-.detail-body section{margin-bottom:38px}
-.detail-body h2{border:0;margin:0 0 12px;padding:0}
-.detail-body p{font-size:1.01rem;color:var(--ink-2);max-width:64ch}
-.nextprev{border-top:1px solid var(--rule);padding-top:24px;display:flex;flex-wrap:wrap;gap:10px}
-.nextprev a{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;text-decoration:none;border:1px solid var(--rule-2);padding:10px 14px;color:var(--muted)}
-.nextprev a:hover{border-color:var(--accent);color:var(--accent)}
-
-footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;color:var(--faint)}
-
-@media (max-width:700px){
-  .hero{padding:72px 20px 88px}
-  .cards{grid-template-columns:1fr}
-  .rubric{grid-template-columns:1fr}
-  .panel{padding:40px 0 80px}
-}
-@media (prefers-reduced-motion:reduce){
-  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
-  /* The entrance animates opacity 0 -> 1 with fill-mode both. Killing the
-     animation without this would leave the whole hero invisible. */
-  #topo,.hero-inner>*,.scrollcue{opacity:1!important;transform:none!important}
-}
+/* Sources and footer */
+.sources { padding-left: 1.2em; display: grid; gap: 8px; font-size: 16px; }
+footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14.5px; color: var(--muted); display: grid; gap: 6px; }
+footer p { margin: 0; max-width: 80ch; }
 </style>
-<link rel="stylesheet" href="../theme.css">
+
+<link rel="stylesheet" href="playbook-shell.css">
 <script src="../theme.js"></script>
-<link rel="stylesheet" href="blog.css">
-<link rel="stylesheet" href="playbook.css">
-<meta property="og:type" content="article">
 </head>
 <body>
-<main class="wrap post visual-post">
-<aside class="post-agenda"><nav class="post-toc" aria-label="Sections"><strong>Sections</strong><ol><li><a href="#summary">Short answer</a></li><li><a href="#maturity">Maturity ladder</a></li><li><a href="#capabilities">Capability map</a></li><li><a href="#workstreams">Workstreams &amp; OKRs</a></li><li><a href="#build-buy">Build, buy or adopt</a></li><li><a href="#mcp">MCP &amp; agents</a></li><li><a href="#roadmap">Roadmap</a></li><li><a href="#measurement">Measurement</a></li><li><a href="#risks">Risks</a></li><li><a href="#sources">Sources</a></li></ol></nav></aside>
-<article>
-<header class="post-header">
-  <a class="backlink" href="../index.html#blog">&larr; Blog</a>
-  <p class="post-kicker">Engineering systems · AI adoption</p>
-  <h1>Building an AI-native software delivery lifecycle</h1>
-  <p class="post-deck">Coding agents can speed up implementation. The harder work is building the context, review capacity, and release discipline that turn that speed into reliable delivery.</p>
-  <p class="post-meta">By Yenkai Huang · <time datetime="2026-10-26">October 26, 2026</time></p>
-<div class="visual-lead"><ol class="run" aria-label="SDLC stages this playbook covers">
+<div class="page">
+<nav class="portfolio-return" aria-label="Portfolio"><a href="../index.html#blog">&larr; Blog</a><span>Yenkai Huang</span></nav>
+  <header class="hero">
+    <p class="eyebrow">Playbook &middot; Engineering systems &middot; Reviewed October 2026</p>
+    <h1>AI-Native SDLC Playbook</h1>
+    <p class="dek">Coding agents raise code throughput quickly. Becoming AI-native means building the context, review and release capacity that let your org absorb that speed without losing stability.</p>
+    <ol class="run" aria-label="SDLC stages this playbook covers">
       <li>intent</li><li class="arrow" aria-hidden="true">&rarr;</li>
       <li>spec</li><li class="arrow" aria-hidden="true">&rarr;</li>
       <li>pull request</li><li class="arrow" aria-hidden="true">&rarr;</li>
       <li>build &amp; test</li><li class="arrow" aria-hidden="true">&rarr;</li>
       <li>release</li><li class="arrow" aria-hidden="true">&rarr;</li>
       <li>operate</li>
-    </ol></div></header>
-<div class="post-body">
-<section id="summary"><p class="section-index">01 / Short answer</p><h2>Short answer</h2>
-
-  <p>Giving engineers access to a coding agent is a useful start. It does not, by itself, change how an organization delivers software. If agents produce changes faster than people can review, integrate, and release them, the extra output becomes a queue.</p>
-  <p>My approach to an AI-native software delivery lifecycle starts with the whole loop: intent, specification, implementation, verification, release, and operation. Agents become a default starting point for suitable tasks. People still set intent, decide what good looks like, and own the outcome.</p>
-  <p>The practical question is where an agent can remove a real constraint without moving the cost somewhere less visible. That requires shared capabilities, clear ownership, and evidence from the work itself.</p>
-
-
-<div class="summary-grid"><div><span>01 / Equip</span><h3>Give agents context</h3><p>Approved tools, repository rules, shared skills.</p></div><div><span>02 / Unblock</span><h3>Invest beyond code</h3><p>Review and release capacity absorb the speed.</p></div><div><span>03 / Verify</span><h3>Build your evals</h3><p>Test the outcomes only your domain can define.</p></div><div><span>04 / Expand</span><h3>Earn the next gate</h3><p>Scale when flow improves and stability holds.</p></div></div>
-<p class="visual-note">Research signals from the original playbook. Study populations and methods differ; vendor figures are labeled.</p><dl class="facts">
+    </ol>
+    <dl class="facts">
       <div><dt>90%</dt><dd>of technology professionals use AI at work, and AI adoption still lowers delivery stability (<a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" target="_blank" rel="noopener">DORA 2025</a>).</dd></div>
       <div><dt>+441%</dt><dd>median time in PR review for AI-assisted developers, across 22,000 developers (<a href="https://www.faros.ai/blog/key-takeaways-from-the-dora-report-2025" target="_blank" rel="noopener">Faros 2026</a>, vendor data).</dd></div>
       <div><dt>30+</dt><dd>CVEs filed against MCP servers and agent tooling in January and February 2026 (<a href="https://cycode.com/blog/owasp-mcp-top-10/" target="_blank" rel="noopener">OWASP MCP Top 10 guide</a>).</dd></div>
     </dl>
-</section>
-  <section id="maturity"><p class="section-index">02 / Maturity ladder</p><h2>Maturity ladder</h2>
-  <p>AI-native describes an operating model, rather than a license count. A maturity ladder helps identify the capabilities a team needs next:</p>
-<div class="visual-table" role="region" aria-label="Maturity ladder table" tabindex="0"><table>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Sections">
+      <p>Sections</p>
+      <ol>
+        <li><a href="#summary">Short answer</a></li>
+        <li><a href="#maturity">Maturity ladder</a></li>
+        <li><a href="#capabilities">Capability map</a></li>
+        <li><a href="#workstreams">Workstreams &amp; OKRs</a></li>
+        <li><a href="#build-buy">Build, buy or adopt</a></li>
+        <li><a href="#mcp">MCP &amp; agents</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#measurement">Measurement</a></li>
+        <li><a href="#risks">Risks</a></li>
+        <li><a href="#sources">Sources</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section id="summary" aria-labelledby="h-summary">
+        <h2 id="h-summary">The short answer</h2>
+        <p class="lead">Give every engineer a sanctioned coding agent, then spend most of your effort on context, review and release. AI now raises delivery throughput, but it still lowers delivery stability, and the bottleneck moves from writing code to reviewing and shipping it.</p>
+        <ul class="key">
+          <li><strong>Start here, days 0&ndash;30.</strong> Publish an AI stance covering allowed tools, data rules and expectations. Give every builder an agentic coding tool. Route all MCP traffic through one gateway with no personal access tokens. Measure lead time by stage, change-fail rate and AI cost before you change anything.</li>
+          <li><strong>Build only the last mile.</strong> Build a team plugin (agent config per repo, skills, runbooks) and your own eval sets. Buy commodity agent tooling, and adopt what your platform already runs.</li>
+          <li><strong>Run seven workstreams.</strong> Guardrails, context, intent to spec, spec to PR, agentic quality, release to recovery, and people with measurement. Each has an outcome and key results.</li>
+          <li><strong>Rank tools with one formula.</strong> Reach &times; hours saved &times; bottleneck weight &times; confidence, divided by effort &times; risk. Connect source control, issue tracker, docs, metrics, chat and design first; start agents on code review, build failures, on-call triage and ticket-to-PR.</li>
+          <li><strong>Ramp on evidence.</strong> Four phases over 12 months, each closed by a measured gate, with change-fail rate guarding every speed target. Assign a shared enablement owner and local team champions.</li>
+        </ul>
+      </section>
+
+      <section id="maturity" aria-labelledby="h-maturity">
+        <h2 id="h-maturity">What AI-native means</h2>
+        <p>AI-native means an agent is the default starting point for every SDLC step (spec, code, test, review, release, operate), while people set intent, review the output and own the outcome.</p>
+        <p>Tools alone don&rsquo;t get you there. DORA&rsquo;s 2025 research, drawn from nearly 5,000 respondents, describes AI as an amplifier of whatever system it lands in. It names seven capabilities that decide whether AI helps: a clear AI stance, healthy data, AI-accessible internal data, strong version control, small batches, user-centric focus and quality internal platforms. Without a user-centric focus, AI adoption can lower team performance (<a href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model" target="_blank" rel="noopener">DORA AI Capabilities Model</a>).</p>
+        <p>Place each team on this ladder. The exit gates are proposed targets; set your own once you have a baseline.</p>
+        <div class="scroll">
+          <table>
             <thead><tr><th>Level</th><th>How work happens</th><th>What the platform provides</th><th>Proposed exit gate</th></tr></thead>
             <tbody>
               <tr><td>L0 Ad hoc</td><td>Individuals paste code into chat tools</td><td>Nothing sanctioned</td><td>AI stance published</td></tr>
-              <tr><td>L1 Assisted</td><td>Each engineer uses a sanctioned agentic IDE or CLI; AI reviews every PR</td><td>Seats, training, an AI PR reviewer</td><td>Supported tools used reliably</td></tr>
-              <tr><td>L2 Connected</td><td>Agents read repo rules, tickets, docs and telemetry through MCP; team skills are shared</td><td>Agent config in every repo, an MCP gateway, a team plugin</td><td>Repository context and tool access work end to end</td></tr>
+              <tr><td>L1 Assisted</td><td>Each engineer uses a sanctioned agentic IDE or CLI; AI reviews every PR</td><td>Seats, training, an AI PR reviewer</td><td>80%+ of engineers use AI weekly</td></tr>
+              <tr><td>L2 Connected</td><td>Agents read repo rules, tickets, docs and telemetry through MCP; team skills are shared</td><td>Agent config in every repo, an MCP gateway, a team plugin</td><td>Every active repo has agent config; 50%+ of PRs AI-assisted</td></tr>
               <tr><td>L3 Orchestrated</td><td>Engineers run several agents in parallel from specs; agents own bounded work such as tests, build fixes and migrations</td><td>Cloud sandboxes, spec templates, an eval harness</td><td>Agent-authored PRs are routine; review time is falling</td></tr>
-              <tr><td>L4 AI-native</td><td>Agents run plan to PR to deploy for defined work classes; PMs and designers ship small UI changes; agents triage incidents</td><td>Auto-merge for low-risk classes, risk-scored rollout, cost telemetry</td><td>Defined work classes deliver reliably with stable change-fail rate</td></tr>
+              <tr><td>L4 AI-native</td><td>Agents run plan to PR to deploy for defined work classes; PMs and designers ship small UI changes; agents triage incidents</td><td>Auto-merge for low-risk classes, risk-scored rollout, cost telemetry</td><td>Half or more of merged code is AI-authored with change-fail rate flat or better</td></tr>
             </tbody>
-          </table></div>
-  <p>Teams can occupy different levels for different workflows. Treat the ladder as a planning aid. Advancement should depend on reliable results, manageable review effort, and stable delivery.</p>
-  </section>
+          </table>
+        </div>
+        <p>An org that has handed out licenses but not yet built context, review capacity or measurement sits between L1 and L2.</p>
+      </section>
 
-  <section id="capabilities"><p class="section-index">03 / Capability map</p><h2>Capability map</h2>
-  <p>Each stage of delivery needs the same underlying capabilities. When every team assembles its own agent stack, it also takes on identity, tool access, sandboxing, and audit work. A shared platform makes those decisions easier to support and inspect.</p>
-  <ul>
-    <li><strong>Context and knowledge.</strong> Repository instructions, architecture notes, standards, skills, and runbooks tell agents how your product works. Give this material an owner and a review date.</li>
-    <li><strong>Tool access.</strong> A registry and governed MCP gateway give agents a consistent route to approved systems, with scoped credentials and audit logs.</li>
-    <li><strong>Agent runtime.</strong> Sandboxed workspaces let background agents execute and test changes within clear boundaries.</li>
-    <li><strong>Identity and guardrails.</strong> Access policies, short-lived credentials, and review requirements define what an agent may do.</li>
-    <li><strong>Evaluation and quality gates.</strong> Representative tasks, tests, and explicit pass criteria establish whether an agent is doing useful work.</li>
-    <li><strong>Measurement.</strong> Delivery telemetry connects adoption to lead time, stability, human effort, and cost.</li>
-  </ul>
-  <p>My default is to build the parts that encode knowledge only your organization has: product context and domain-specific evaluations. Buy or adopt established tooling for coding, runtime, review, identity, and observability where it meets your requirements. Extend existing CI and release systems before adding parallel infrastructure.</p>
-  <p>A team plugin can package the last mile: repository configuration, reusable skills, review rules, and runbooks. Your evaluation set can capture golden tasks, expected behavior, and failure cases. Those assets improve as the team learns; they should stay versioned alongside the work.</p>
-  
-<figure>
-          <div class="visual-frame" tabindex="0" role="region" aria-label="Diagram; scroll horizontally on narrow screens"><svg viewBox="0 0 760 440" role="img" aria-labelledby="cap-title" class="playbook-diagram"><title id="cap-title">Five SDLC stages run on six shared capabilities; you build only context and evals</title><defs><marker id="cap-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs><text x="380" y="26" class="q" font-size="11.5" text-anchor="middle">learnings from production feed the next spec</text><g class="edge" fill="none"><path d="M156 90H169" marker-end="url(#cap-arrow)"/><path d="M301 90H314" marker-end="url(#cap-arrow)"/><path d="M446 90H459" marker-end="url(#cap-arrow)"/><path d="M591 90H604" marker-end="url(#cap-arrow)"/><path d="M670.0 52V36H90.0V52" marker-end="url(#cap-arrow)"/></g><g class="faint"><line x1="90.0" y1="128" x2="90.0" y2="152"/><line x1="235.0" y1="128" x2="235.0" y2="152"/><line x1="380.0" y1="128" x2="380.0" y2="152"/><line x1="525.0" y1="128" x2="525.0" y2="152"/><line x1="670.0" y1="128" x2="670.0" y2="152"/></g><rect x="24" y="52" width="132" height="76" rx="8" class="box"/><text x="36" y="76" class="t" font-size="13" font-weight="600">Intent to spec</text><text x="36" y="96" class="q" font-size="11">PRDs and designs</text><text x="36" y="112" class="q" font-size="11">Agent-ready specs</text><rect x="169" y="52" width="132" height="76" rx="8" class="box"/><text x="181" y="76" class="t" font-size="13" font-weight="600">Spec to PR</text><text x="181" y="96" class="q" font-size="11">Coding agents</text><text x="181" y="112" class="q" font-size="11">AI code review</text><rect x="314" y="52" width="132" height="76" rx="8" class="box"/><text x="326" y="76" class="t" font-size="13" font-weight="600">Build and test</text><text x="326" y="96" class="q" font-size="11">Test generation</text><text x="326" y="112" class="q" font-size="11">Build-fix agents</text><rect x="459" y="52" width="132" height="76" rx="8" class="box"/><text x="471" y="76" class="t" font-size="13" font-weight="600">Release</text><text x="471" y="96" class="q" font-size="11">Risk-based rollout</text><text x="471" y="112" class="q" font-size="11">Auto-merge classes</text><rect x="604" y="52" width="132" height="76" rx="8" class="box"/><text x="616" y="76" class="t" font-size="13" font-weight="600">Operate</text><text x="616" y="96" class="q" font-size="11">On-call triage</text><text x="616" y="112" class="q" font-size="11">Incident agents</text><rect x="24" y="152" width="712" height="220" rx="8" class="box"/><text x="40" y="176" class="t" font-size="13" font-weight="600">Shared platform capabilities</text><rect x="40" y="188" width="216" height="76" rx="8" class="hot"/><text x="52" y="212" class="t" font-size="13" font-weight="600">Context and knowledge</text><text x="52" y="232" class="t" font-size="11.5">Repo config, skills, runbooks</text><text x="52" y="248" class="q" font-size="11.5">Build: your team plugin</text><rect x="272" y="188" width="216" height="76" rx="8" class="box"/><text x="284" y="212" class="t" font-size="13" font-weight="600">Tool access via MCP</text><text x="284" y="232" class="t" font-size="11.5">Gateway and registry, no PATs</text><text x="284" y="248" class="q" font-size="11.5">Buy: vendor remote servers</text><rect x="504" y="188" width="216" height="76" rx="8" class="box"/><text x="516" y="212" class="t" font-size="13" font-weight="600">Agent runtime</text><text x="516" y="232" class="t" font-size="11.5">Sandboxed background agents</text><text x="516" y="248" class="q" font-size="11.5">Buy or adopt: cloud sandboxes</text><rect x="40" y="280" width="216" height="76" rx="8" class="box"/><text x="52" y="304" class="t" font-size="13" font-weight="600">Identity and guardrails</text><text x="52" y="324" class="t" font-size="11.5">Scoped tokens and audit logs</text><text x="52" y="340" class="q" font-size="11.5">Adopt: SSO and gateway policy</text><rect x="272" y="280" width="216" height="76" rx="8" class="hot"/><text x="284" y="304" class="t" font-size="13" font-weight="600">Evals and quality gates</text><text x="284" y="324" class="t" font-size="11.5">Golden tasks, judges, CI gates</text><text x="284" y="340" class="q" font-size="11.5">Build: your own eval sets</text><rect x="504" y="280" width="216" height="76" rx="8" class="box"/><text x="516" y="304" class="t" font-size="13" font-weight="600">Measurement</text><text x="516" y="324" class="t" font-size="11.5">Lead time, cost and stability</text><text x="516" y="340" class="q" font-size="11.5">Buy or adopt: metrics platform</text><rect x="24" y="388" width="712" height="40" rx="8" class="band"/><text x="380" y="412" class="t" font-size="12.5" text-anchor="middle">People and operating model: AI stance, proficiency L1&#8211;L4, a champion per team, a weekly gate</text></svg></div>
+      <section id="capabilities" aria-labelledby="h-capabilities">
+        <h2 id="h-capabilities">The capability map</h2>
+        <p>An AI-native SDLC needs agents at five stages and six shared capabilities beneath them. When each team wires up agents on its own, every team re-solves auth, tool access, sandboxing and audit, and none of it gets reviewed.</p>
+        <figure>
+          <div class="frame"><svg viewBox="0 0 760 440" role="img" aria-labelledby="cap-title" class="diagram"><title id="cap-title">Five SDLC stages run on six shared capabilities; you build only context and evals</title><defs><marker id="cap-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs><text x="380" y="26" class="q" font-size="11.5" text-anchor="middle">learnings from production feed the next spec</text><g class="edge" fill="none"><path d="M156 90H169" marker-end="url(#cap-arrow)"/><path d="M301 90H314" marker-end="url(#cap-arrow)"/><path d="M446 90H459" marker-end="url(#cap-arrow)"/><path d="M591 90H604" marker-end="url(#cap-arrow)"/><path d="M670.0 52V36H90.0V52" marker-end="url(#cap-arrow)"/></g><g class="faint"><line x1="90.0" y1="128" x2="90.0" y2="152"/><line x1="235.0" y1="128" x2="235.0" y2="152"/><line x1="380.0" y1="128" x2="380.0" y2="152"/><line x1="525.0" y1="128" x2="525.0" y2="152"/><line x1="670.0" y1="128" x2="670.0" y2="152"/></g><rect x="24" y="52" width="132" height="76" rx="8" class="box"/><text x="36" y="76" class="t" font-size="13" font-weight="600">Intent to spec</text><text x="36" y="96" class="q" font-size="11">PRDs and designs</text><text x="36" y="112" class="q" font-size="11">Agent-ready specs</text><rect x="169" y="52" width="132" height="76" rx="8" class="box"/><text x="181" y="76" class="t" font-size="13" font-weight="600">Spec to PR</text><text x="181" y="96" class="q" font-size="11">Coding agents</text><text x="181" y="112" class="q" font-size="11">AI code review</text><rect x="314" y="52" width="132" height="76" rx="8" class="box"/><text x="326" y="76" class="t" font-size="13" font-weight="600">Build and test</text><text x="326" y="96" class="q" font-size="11">Test generation</text><text x="326" y="112" class="q" font-size="11">Build-fix agents</text><rect x="459" y="52" width="132" height="76" rx="8" class="box"/><text x="471" y="76" class="t" font-size="13" font-weight="600">Release</text><text x="471" y="96" class="q" font-size="11">Risk-based rollout</text><text x="471" y="112" class="q" font-size="11">Auto-merge classes</text><rect x="604" y="52" width="132" height="76" rx="8" class="box"/><text x="616" y="76" class="t" font-size="13" font-weight="600">Operate</text><text x="616" y="96" class="q" font-size="11">On-call triage</text><text x="616" y="112" class="q" font-size="11">Incident agents</text><rect x="24" y="152" width="712" height="220" rx="8" class="box"/><text x="40" y="176" class="t" font-size="13" font-weight="600">Shared platform capabilities</text><rect x="40" y="188" width="216" height="76" rx="8" class="hot"/><text x="52" y="212" class="t" font-size="13" font-weight="600">Context and knowledge</text><text x="52" y="232" class="t" font-size="11.5">Repo config, skills, runbooks</text><text x="52" y="248" class="q" font-size="11.5">Build: your team plugin</text><rect x="272" y="188" width="216" height="76" rx="8" class="box"/><text x="284" y="212" class="t" font-size="13" font-weight="600">Tool access via MCP</text><text x="284" y="232" class="t" font-size="11.5">Gateway and registry, no PATs</text><text x="284" y="248" class="q" font-size="11.5">Buy: vendor remote servers</text><rect x="504" y="188" width="216" height="76" rx="8" class="box"/><text x="516" y="212" class="t" font-size="13" font-weight="600">Agent runtime</text><text x="516" y="232" class="t" font-size="11.5">Sandboxed background agents</text><text x="516" y="248" class="q" font-size="11.5">Buy or adopt: cloud sandboxes</text><rect x="40" y="280" width="216" height="76" rx="8" class="box"/><text x="52" y="304" class="t" font-size="13" font-weight="600">Identity and guardrails</text><text x="52" y="324" class="t" font-size="11.5">Scoped tokens and audit logs</text><text x="52" y="340" class="q" font-size="11.5">Adopt: SSO and gateway policy</text><rect x="272" y="280" width="216" height="76" rx="8" class="hot"/><text x="284" y="304" class="t" font-size="13" font-weight="600">Evals and quality gates</text><text x="284" y="324" class="t" font-size="11.5">Golden tasks, judges, CI gates</text><text x="284" y="340" class="q" font-size="11.5">Build: your own eval sets</text><rect x="504" y="280" width="216" height="76" rx="8" class="box"/><text x="516" y="304" class="t" font-size="13" font-weight="600">Measurement</text><text x="516" y="324" class="t" font-size="11.5">Lead time, cost and stability</text><text x="516" y="340" class="q" font-size="11.5">Buy or adopt: metrics platform</text><rect x="24" y="388" width="712" height="40" rx="8" class="band"/><text x="380" y="412" class="t" font-size="12.5" text-anchor="middle">People and operating model: AI stance, proficiency L1&#8211;L4, a champion per team, a weekly gate</text></svg></div>
           <figcaption><strong>Every SDLC stage runs on six shared capabilities; build only context and evals.</strong> Highlighted boxes are the last mile you build. Buy or adopt the rest.</figcaption>
         </figure>
-</section>
+        <p>Only two layers are yours to build, because only you hold your product&rsquo;s context and know what a correct result looks like in your domain. DORA found that a quality internal platform amplifies AI&rsquo;s effect on organizational performance, so put the shared capabilities on the platform instead of in each team.</p>
+      </section>
 
-  <section id="workstreams"><p class="section-index">04 / Workstreams &amp; OKRs</p><h2>Workstreams &amp; OKRs</h2>
-  <p>Assign an outcome and an accountable owner to each workstream. Choose targets after measuring a baseline. The examples below describe what to improve, rather than prescribing the same numerical goal for every team.</p>
-  <div class="workstream-card"><span class="workstream-id">A</span><div><h3>Guardrails and AI stance</h3><p>Make the supported path clear. Publish approved tools and data policies, broker agent access through governed connections, and expose spend. Track policy coverage, credential hygiene, audit coverage, and cost per completed change.</p></div></div>
-  <div class="workstream-card"><span class="workstream-id">B</span><div><h3>Context and agent readiness</h3><p>Give agents the information needed to finish a task without a person repeatedly relaying it. Track repository instruction coverage, end-to-end completion on representative tasks, and human intervention per task.</p></div></div>
-  <div class="workstream-card"><span class="workstream-id">C</span><div><h3>Intent to specification</h3><p>Turn an idea into an agent-ready brief with a problem statement, acceptance criteria, constraints, and a verification plan. Measure time to an approved spec, first-pass acceptance, and rework. Let product and design partners prototype bounded changes within the same review process.</p></div></div>
-  <div class="workstream-card"><span class="workstream-id">D</span><div><h3>Specification to pull request</h3><p>Help agents produce small, understandable changes that reviewers can verify. Measure review wait time, review effort, PR size, and rework. Introduce automated merge only for a narrow class with proven checks and a clear owner.</p></div></div>
-  <div class="workstream-card"><span class="workstream-id">E</span><div><h3>Agentic quality and CI</h3><p>Use agents to investigate build failures, improve tests, and repair repeatable problems. Track flaky tests, remediation time, evaluation pass rates, and change-failure rate. More generated tests are useful only when they catch meaningful failures.</p></div></div>
-  <div class="workstream-card"><span class="workstream-id">F</span><div><h3>Release to recovery</h3><p>Carry agent assistance through rollout and operation. Start with release verification and first-draft incident triage. Use progressive delivery and rehearsed rollback paths; measure deployment wait time, recovery time, and the usefulness of triage output.</p></div></div>
-  <div class="workstream-card"><span class="workstream-id">G</span><div><h3>People and measurement</h3><p>Give teams training, a place to share working practices, and a recurring review of outcomes. A shared enablement owner can maintain the platform while local champions bring feedback from delivery teams. Size that effort to the organization and its bottlenecks.</p></div></div>
-  </section>
+      <section id="workstreams" aria-labelledby="h-workstreams">
+        <h2 id="h-workstreams">Workstreams, outcomes and key results</h2>
+        <p>Seven workstreams cover the loop. Targets are proposals for a two to three quarter horizon; measure baselines in the first 30 days before you commit to them.</p>
+        <ol class="ws">
+          <li><span class="ws-id" aria-hidden="true">A</span><div><h3>Guardrails and AI stance</h3><p><span class="label">Outcome</span>Everyone knows what is allowed, and agents act with scoped, audited access.</p><ul class="krs"><li>AI stance published by week 2</li><li>100% of agent tool calls through the MCP gateway; zero personal access tokens in agent configs</li><li>AI cost per merged PR reported monthly</li></ul></div></li>
+          <li><span class="ws-id" aria-hidden="true">B</span><div><h3>Context and agent readiness</h3><p><span class="label">Outcome</span>Agents get your org&rsquo;s context without a person relaying it.</p><ul class="krs"><li>100% of active repos carry an agent config file and the team plugin</li><li>Top 5 agent use cases finish end to end without human rescue in 4 of 5 trials</li><li>Average human intervention per agent task halved</li></ul></div></li>
+          <li><span class="ws-id" aria-hidden="true">C</span><div><h3>Intent to spec</h3><p><span class="label">Outcome</span>Ideas become agent-ready specs fast, and PMs and designers ship small UI changes themselves.</p><ul class="krs"><li>Idea-to-approved-spec time halved</li><li>90%+ of specs pass review the first time</li><li>Spec rework under 10%</li></ul></div></li>
+          <li><span class="ws-id" aria-hidden="true">D</span><div><h3>Spec to PR</h3><p><span class="label">Outcome</span>Agents write most of the code, and review stops being the bottleneck.</p><ul class="krs"><li>Median PR review time halved from baseline</li><li>Median PR size flat or smaller</li><li>One new auto-merge PR class live each quarter</li></ul></div></li>
+          <li><span class="ws-id" aria-hidden="true">E</span><div><h3>Agentic quality and CI</h3><p><span class="label">Outcome</span>More changes ship without more failures.</p><ul class="krs"><li>Build-failure remediation agent on every repo</li><li>Flaky-test rate halved</li><li>Change-fail rate at or below baseline while deploy frequency doubles</li></ul></div></li>
+          <li><span class="ws-id" aria-hidden="true">F</span><div><h3>Release to recovery</h3><p><span class="label">Outcome</span>Shipping and operating are as agent-assisted as coding.</p><ul class="krs"><li>Deploy stage of lead time cut by half</li><li>Risk-scored progressive delivery on every tier-1 service</li><li>On-call triage agent drafts the first response on 80% of pages; MTTR down 30%</li></ul></div></li>
+          <li><span class="ws-id" aria-hidden="true">G</span><div><h3>People, proficiency and measurement</h3><p><span class="label">Outcome</span>AI-native is how the org works, and you can prove it.</p><ul class="krs"><li>100% of engineers at L2 or above, 50% at L3, 20% at L4</li><li>Weekly AI usage at 90%+</li><li>Lead time by stage reviewed monthly against AI cost</li></ul></div></li>
+        </ol>
+        <p>Staff it lean. A shared AI enablement owner coordinates A, B and G and runs the weekly cadence. Local champions drive adoption within their teams. Size the effort to your organization and its constraints. Teams own C through F, and the pod removes their blockers.</p>
+      </section>
 
-  <section id="build-buy"><p class="section-index">05 / Build, buy or adopt</p><h2>Build, buy or adopt</h2><p>Keep product context and domain evaluations close. Buy established agent tooling and adopt the delivery infrastructure your teams already trust.</p><div class="visual-table" role="region" aria-label="Build, buy or adopt table" tabindex="0"><table>
+      <section id="build-buy" aria-labelledby="h-build-buy">
+        <h2 id="h-build-buy">Build, buy or adopt</h2>
+        <p>Build only what encodes your product&rsquo;s context. Buy commodity agent tooling, and adopt whatever your platform already runs for CI, deploys, observability and metrics.</p>
+        <div class="scroll">
+          <table>
             <thead><tr><th>Capability</th><th>Default</th><th>What to get</th><th>What you build</th></tr></thead>
             <tbody>
               <tr><td>Coding agents</td><td><span class="chip buy">Buy</span></td><td>Agentic IDE and CLI seats with enterprise data controls</td><td>Repo instruction files; team subagents</td></tr>
@@ -328,17 +321,26 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
               <tr><td>Evals and quality gates</td><td><span class="chip build">Build</span></td><td>An eval runner from your agent or CI vendor</td><td>Golden tasks, judge prompts and pass thresholds for your domain</td></tr>
               <tr><td>Measurement</td><td><span class="chip adopt">Adopt</span></td><td>An engineering metrics platform with DORA metrics and AI cost</td><td>An org-level OKR view on top</td></tr>
             </tbody>
-          </table></div></section>
-<section id="mcp"><p class="section-index">06 / MCP &amp; agents</p><h2>MCP &amp; agents</h2>
-  <p>A tool catalog can grow faster than the value it creates. Rank candidates by the work they improve, the frequency of that work, and the risk they introduce. The playbook uses this planning heuristic:</p>
-  <div class="post-formula" aria-label="Priority formula">Priority = (Reach × Time saved × Bottleneck weight × Confidence) ÷ (Effort × Risk)</div>
-  <p><strong>Reach</strong> is the number of relevant uses over a consistent period. <strong>Time saved</strong> comes from a sample of real tasks. <strong>Bottleneck weight</strong> reflects how much of delivery time sits in that stage. <strong>Confidence</strong> captures the strength of the evidence. <strong>Effort</strong> includes rollout and ongoing support; <strong>risk</strong> reflects permissions and the consequences of a mistake.</p>
-  <p>Use consistent scales across candidates and revisit the inputs after a pilot. The score is a way to make assumptions visible, not a validated prediction of return.</p>
-  <p>Start with connections that supply essential context: source control, issue tracking, documentation, and observability. Add design and team discussions where they carry decisions an agent needs. Bring in logs, paging, and deployment state as operational use cases mature. Build a custom MCP server when important domain information is unavailable through an existing integration.</p>
-  <p>Begin with read access wherever possible. Treat PR creation, comments, deployment, and production changes as separate permission decisions. Route release actions through the established pipeline and require review at meaningful trust boundaries. Tool descriptions and tool output remain untrusted input.</p>
-  <p>The strongest early agent candidates run frequently, have a bounded scope, and produce an output someone can verify: first-pass code review, build-failure investigation, incident summaries, and ticket-to-PR work from a clear specification. Expand into open-ended feature work when evaluations and review capacity support it.</p>
-  
-<h3 id="calculator">Priority calculator</h3>
+          </table>
+        </div>
+        <p>Buy when a credible product exists, timebox the trial, and register what you adopt so it shows up in your tool inventory. Build a capability only when it holds context no vendor can have.</p>
+      </section>
+
+      <section id="mcp" aria-labelledby="h-mcp">
+        <h2 id="h-mcp">MCP servers and agents: what to connect first</h2>
+        <p>Connect read-only context servers first, route write access only through pipelines, and build your own MCP server last. Score every candidate server, skill or agent with one formula, so the order is argued from data rather than enthusiasm.</p>
+        <pre class="formula" aria-label="Priority formula">Priority = (Reach &times; Hours saved per use &times; Bottleneck weight &times; Confidence)
+           &divide; (Effort &times; Risk)</pre>
+        <dl class="defs">
+          <dt>Reach</dt><dd>Uses or runs per week across the org.</dd>
+          <dt>Hours saved</dt><dd>Hours saved per use, measured on a sample of real tasks.</dd>
+          <dt>Bottleneck weight</dt><dd>Share of lead time at the stage the tool acts on, from 0 to 1.</dd>
+          <dt>Confidence</dt><dd>1.0 for a proven product or existing platform feature; about 0.5 for something you build.</dd>
+          <dt>Effort</dt><dd>Person-weeks to roll it out to the whole org.</dd>
+          <dt>Risk</dt><dd>1 for read-only, 2 for writes behind review, 3 for direct production writes.</dd>
+        </dl>
+
+        <h3 id="calculator">Priority calculator</h3>
         <div class="calc">
           <div class="calc-bar">
             <p>Example inputs. Replace them with your own numbers; edits stay in this browser.</p>
@@ -348,14 +350,18 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
               <button type="button" class="btn" id="calc-reset">Reset examples</button>
             </div>
           </div>
-          <div class="visual-table" role="region" aria-label="Priority calculator inputs" tabindex="0">
+          <div class="scroll">
             <table>
               <thead><tr><th>Rank</th><th>Candidate</th><th>Reach /wk</th><th>Hours /use</th><th>Bottleneck</th><th>Confidence</th><th>Effort (pw)</th><th>Risk</th><th>Score</th><th><span class="sr-hide">Remove</span></th></tr></thead>
               <tbody id="calc-body"></tbody>
             </table>
           </div>
           <noscript><p class="note">The calculator needs JavaScript. The formula above works the same on paper.</p></noscript>
-        </div><h3>Which MCP servers first</h3><div class="visual-table" role="region" aria-label="MCP and agents table" tabindex="0"><table>
+        </div>
+
+        <h3>Which MCP servers first</h3>
+        <div class="scroll">
+          <table>
             <thead><tr><th>MCP server</th><th>Tier</th><th>Why it ranks here</th><th>Access to grant agents</th></tr></thead>
             <tbody>
               <tr><td>Source control</td><td><span class="tier">Tier 1</span></td><td>Every coding and review agent needs repo, PR and CI context</td><td>Read and open PRs; never merge</td></tr>
@@ -367,40 +373,44 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
               <tr><td>CI/CD and deploys</td><td><span class="tier">Tier 2</span></td><td>Build logs and deploy state for fix and rollout agents</td><td>Read; deploy only through the pipeline</td></tr>
               <tr><td>Your own service MCP</td><td><span class="tier">Tier 3</span></td><td>Domain data agents can&rsquo;t get elsewhere, such as feature flags, test tenants and config</td><td>Read in production; write in pre-production only</td></tr>
             </tbody>
-          </table></div>
-</section>
+          </table>
+        </div>
+        <p>Treat tool descriptions and tool output as untrusted input. The OWASP MCP Top 10 lists token mismanagement, scope creep, tool poisoning and shadow servers among the main risks. Pin server versions, allowlist servers from a registry, and run untrusted code in sandboxes (<a href="https://cycode.com/blog/owasp-mcp-top-10/" target="_blank" rel="noopener">OWASP MCP Top 10 guide</a>).</p>
 
-  <section id="roadmap"><p class="section-index">07 / Roadmap</p><h2>Roadmap</h2>
-  <p>A calendar is useful for coordination, but passing a date does not prove readiness. I prefer four phases whose pace follows the evidence:</p>
-  <ol class="post-phases">
-    <li><strong>Establish foundations.</strong> Publish the AI stance, provide supported tools, define access policies, assign owners, and measure delivery by stage. <em>Gate:</em> the baseline exists and teams can explain the rules.</li>
-    <li><strong>Connect the workflow.</strong> Add repository instructions, shared skills, essential MCP connections, AI-assisted review, and build-failure assistance. <em>Gate:</em> representative tasks work end to end and review capacity is keeping up.</li>
-    <li><strong>Orchestrate bounded work.</strong> Introduce spec-driven background tasks, an initial low-risk merge class, progressive delivery, and triage assistance. <em>Gate:</em> flow improves while stability stays at or above the agreed baseline.</li>
-    <li><strong>Expand proven work classes.</strong> Extend agent ownership across suitable stages, put domain evaluations into CI, and manage cost per completed change. <em>Gate:</em> the gains repeat across real delivery work without increasing recovery burden.</li>
-  </ol>
-  <p>At each review, decide whether to continue, slow down, or hold. A missed quality guardrail should pause expansion while the team investigates. Use the longest queue in the lifecycle to decide where the next investment goes.</p>
-  
-<figure>
-          <div class="visual-frame" tabindex="0" role="region" aria-label="Diagram; scroll horizontally on narrow screens"><svg viewBox="0 0 760 496" role="img" aria-labelledby="quad-title" class="playbook-diagram"><title id="quad-title">Quick wins are configuration; the big bets sit in review and release</title><defs><marker id="quad-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs><rect x="80" y="20" width="328" height="234" class="tint"/><g class="faint" stroke-dasharray="4 4"><line x1="408" y1="20" x2="408" y2="436"/><line x1="80" y1="254" x2="736" y2="254"/></g><g class="edge" fill="none"><path d="M80 436H736" marker-end="url(#quad-arrow)"/><path d="M80 436V20" marker-end="url(#quad-arrow)"/></g><text x="408" y="484" class="t" font-size="12.5" text-anchor="middle">Implementation effort</text><text x="80" y="458" class="q" font-size="11.5" text-anchor="middle">Low</text><text x="736" y="458" class="q" font-size="11.5" text-anchor="end">High</text><text x="0" y="0" class="t" font-size="12.5" text-anchor="middle" transform="translate(40 228) rotate(-90)">Impact on lead time and quality</text><text x="70" y="436" class="q" font-size="11.5" text-anchor="end">Low</text><text x="70" y="30" class="q" font-size="11.5" text-anchor="end">High</text><text x="96" y="46" class="t" font-size="13" font-weight="600">Do now</text><text x="96" y="64" class="q" font-size="11.5">High impact, low effort, mostly configuration</text><circle cx="104" cy="96" r="5" class="dot-hot"/><text x="118" y="100" class="t" font-size="12.5">AI PR review on every repo</text><circle cx="104" cy="128" r="5" class="dot-hot"/><text x="118" y="132" class="t" font-size="12.5">Agent config and team plugin</text><circle cx="104" cy="160" r="5" class="dot-hot"/><text x="118" y="164" class="t" font-size="12.5">Tier-1 MCP servers via gateway</text><circle cx="104" cy="192" r="5" class="dot-hot"/><text x="118" y="196" class="t" font-size="12.5">Build-failure remediation agent</text><circle cx="104" cy="224" r="5" class="dot-hot"/><text x="118" y="228" class="t" font-size="12.5">Build and test caching</text><text x="424" y="46" class="t" font-size="13" font-weight="600">Fund as gated bets</text><text x="424" y="64" class="q" font-size="11.5">High impact, high effort, ramp on evidence</text><circle cx="432" cy="96" r="5" class="dot"/><text x="446" y="100" class="t" font-size="12.5">Risk-scored progressive delivery</text><circle cx="432" cy="128" r="5" class="dot"/><text x="446" y="132" class="t" font-size="12.5">Auto-merge for low-risk PR classes</text><circle cx="432" cy="160" r="5" class="dot"/><text x="446" y="164" class="t" font-size="12.5">On-call triage agent</text><circle cx="432" cy="192" r="5" class="dot"/><text x="446" y="196" class="t" font-size="12.5">Ticket-to-PR background agents</text><circle cx="432" cy="224" r="5" class="dot"/><text x="446" y="228" class="t" font-size="12.5">Spec-driven intent-to-PR flow</text><text x="96" y="282" class="t" font-size="13" font-weight="600">Fill in when convenient</text><text x="96" y="300" class="q" font-size="11.5">Low effort, narrower impact</text><circle cx="104" cy="332" r="5" class="dot"/><text x="118" y="336" class="t" font-size="12.5">Compliance fix-it agent</text><circle cx="104" cy="364" r="5" class="dot"/><text x="118" y="368" class="t" font-size="12.5">Docs Q&A agent for onboarding</text><circle cx="104" cy="396" r="5" class="dot"/><text x="118" y="400" class="t" font-size="12.5">Delivery metrics in team rituals</text><text x="424" y="282" class="t" font-size="13" font-weight="600">Avoid or defer</text><text x="424" y="300" class="q" font-size="11.5">High effort, duplicates what you can buy</text><circle cx="432" cy="332" r="5" class="dot"/><text x="446" y="336" class="t" font-size="12.5">Your own agent runtime or sandbox</text><circle cx="432" cy="364" r="5" class="dot"/><text x="446" y="368" class="t" font-size="12.5">Duplicate MCP servers for vendor tools</text><circle cx="432" cy="396" r="5" class="dot"/><text x="446" y="400" class="t" font-size="12.5">A bespoke metrics stack</text></svg></div>
+        <h3>Which agents first</h3>
+        <p>Start with agents that run often on bounded work and are easy to verify: AI code review on every PR, build-failure remediation, first-draft on-call triage, and ticket-to-PR for well-specified tickets. Leave open-ended feature agents until your evals and review capacity can keep up with them.</p>
+      </section>
+
+      <section id="roadmap" aria-labelledby="h-roadmap">
+        <h2 id="h-roadmap">Prioritization and roadmap</h2>
+        <p>Prioritize by where the time goes. Before you buy anything, measure lead time by stage: prep, code, review and deploy. Telemetry across thousands of teams shows that as code generation speeds up, the constraint shifts to review, integration and deployment (<a href="https://www.faros.ai/blog/key-takeaways-from-the-dora-report-2025" target="_blank" rel="noopener">Faros</a>).</p>
+        <p>Apply five rules, in order:</p>
+        <ol class="rules">
+          <li><strong>Foundations gate everything.</strong> No agent rollout before the AI stance, gateway-only tool access and baselines exist.</li>
+          <li><strong>Attack the biggest stage first.</strong> In most orgs that is review or deploy, not coding.</li>
+          <li><strong>Buy or adopt before you build.</strong> A proven product scores 1.0 on confidence; a custom build scores about 0.5.</li>
+          <li><strong>Read before write, bounded before open-ended.</strong> Agents start on read-only context and well-defined work such as build fixes, test gaps and migrations.</li>
+          <li><strong>Ramp on evidence.</strong> Every phase ends at a gate, and a missed gate means slow down or hold.</li>
+        </ol>
+        <figure>
+          <div class="frame"><svg viewBox="0 0 760 496" role="img" aria-labelledby="quad-title" class="diagram"><title id="quad-title">Quick wins are configuration; the big bets sit in review and release</title><defs><marker id="quad-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker></defs><rect x="80" y="20" width="328" height="234" class="tint"/><g class="faint" stroke-dasharray="4 4"><line x1="408" y1="20" x2="408" y2="436"/><line x1="80" y1="254" x2="736" y2="254"/></g><g class="edge" fill="none"><path d="M80 436H736" marker-end="url(#quad-arrow)"/><path d="M80 436V20" marker-end="url(#quad-arrow)"/></g><text x="408" y="484" class="t" font-size="12.5" text-anchor="middle">Implementation effort</text><text x="80" y="458" class="q" font-size="11.5" text-anchor="middle">Low</text><text x="736" y="458" class="q" font-size="11.5" text-anchor="end">High</text><text x="0" y="0" class="t" font-size="12.5" text-anchor="middle" transform="translate(40 228) rotate(-90)">Impact on lead time and quality</text><text x="70" y="436" class="q" font-size="11.5" text-anchor="end">Low</text><text x="70" y="30" class="q" font-size="11.5" text-anchor="end">High</text><text x="96" y="46" class="t" font-size="13" font-weight="600">Do now</text><text x="96" y="64" class="q" font-size="11.5">High impact, low effort, mostly configuration</text><circle cx="104" cy="96" r="5" class="dot-hot"/><text x="118" y="100" class="t" font-size="12.5">AI PR review on every repo</text><circle cx="104" cy="128" r="5" class="dot-hot"/><text x="118" y="132" class="t" font-size="12.5">Agent config and team plugin</text><circle cx="104" cy="160" r="5" class="dot-hot"/><text x="118" y="164" class="t" font-size="12.5">Tier-1 MCP servers via gateway</text><circle cx="104" cy="192" r="5" class="dot-hot"/><text x="118" y="196" class="t" font-size="12.5">Build-failure remediation agent</text><circle cx="104" cy="224" r="5" class="dot-hot"/><text x="118" y="228" class="t" font-size="12.5">Build and test caching</text><text x="424" y="46" class="t" font-size="13" font-weight="600">Fund as gated bets</text><text x="424" y="64" class="q" font-size="11.5">High impact, high effort, ramp on evidence</text><circle cx="432" cy="96" r="5" class="dot"/><text x="446" y="100" class="t" font-size="12.5">Risk-scored progressive delivery</text><circle cx="432" cy="128" r="5" class="dot"/><text x="446" y="132" class="t" font-size="12.5">Auto-merge for low-risk PR classes</text><circle cx="432" cy="160" r="5" class="dot"/><text x="446" y="164" class="t" font-size="12.5">On-call triage agent</text><circle cx="432" cy="192" r="5" class="dot"/><text x="446" y="196" class="t" font-size="12.5">Ticket-to-PR background agents</text><circle cx="432" cy="224" r="5" class="dot"/><text x="446" y="228" class="t" font-size="12.5">Spec-driven intent-to-PR flow</text><text x="96" y="282" class="t" font-size="13" font-weight="600">Fill in when convenient</text><text x="96" y="300" class="q" font-size="11.5">Low effort, narrower impact</text><circle cx="104" cy="332" r="5" class="dot"/><text x="118" y="336" class="t" font-size="12.5">Compliance fix-it agent</text><circle cx="104" cy="364" r="5" class="dot"/><text x="118" y="368" class="t" font-size="12.5">Docs Q&amp;A agent for onboarding</text><circle cx="104" cy="396" r="5" class="dot"/><text x="118" y="400" class="t" font-size="12.5">Delivery metrics in team rituals</text><text x="424" y="282" class="t" font-size="13" font-weight="600">Avoid or defer</text><text x="424" y="300" class="q" font-size="11.5">High effort, duplicates what you can buy</text><circle cx="432" cy="332" r="5" class="dot"/><text x="446" y="336" class="t" font-size="12.5">Your own agent runtime or sandbox</text><circle cx="432" cy="364" r="5" class="dot"/><text x="446" y="368" class="t" font-size="12.5">Duplicate MCP servers for vendor tools</text><circle cx="432" cy="396" r="5" class="dot"/><text x="446" y="400" class="t" font-size="12.5">A bespoke metrics stack</text></svg></div>
           <figcaption><strong>Quick wins are configuration; the big bets sit in review and release.</strong> Order inside a quadrant is not a ranking.</figcaption>
-        </figure><figure>
-          <div class="visual-frame" tabindex="0" role="region" aria-label="Diagram; scroll horizontally on narrow screens"><svg viewBox="0 0 760 342" role="img" aria-labelledby="road-title" class="playbook-diagram"><title id="road-title">Start with foundations; every phase ends at a measured gate</title><rect x="24" y="20" width="172" height="176" rx="8" class="hot"/><line x1="36" y1="74" x2="184" y2="74" class="faint"/><text x="36" y="44" class="t" font-size="13" font-weight="600">1 · Foundations</text><text x="36" y="62" class="q" font-size="11.5">Establish baseline</text><text x="36" y="96" class="t" font-size="11.5">AI stance published</text><text x="36" y="116" class="t" font-size="11.5">Tool access for all</text><text x="36" y="136" class="t" font-size="11.5">Baselines measured</text><text x="36" y="156" class="t" font-size="11.5">MCP only via gateway</text><text x="36" y="176" class="t" font-size="11.5">A champion per team</text><rect x="204" y="20" width="172" height="176" rx="8" class="box"/><line x1="216" y1="74" x2="364" y2="74" class="faint"/><text x="216" y="44" class="t" font-size="13" font-weight="600">2 · Connect</text><text x="216" y="62" class="q" font-size="11.5">Connect the workflow</text><text x="216" y="96" class="t" font-size="11.5">Agent config per repo</text><text x="216" y="116" class="t" font-size="11.5">Team plugin shipped</text><text x="216" y="136" class="t" font-size="11.5">Tier-1 MCP servers live</text><text x="216" y="156" class="t" font-size="11.5">AI review on all PRs</text><text x="216" y="176" class="t" font-size="11.5">Build-fix agent live</text><rect x="384" y="20" width="172" height="176" rx="8" class="box"/><line x1="396" y1="74" x2="544" y2="74" class="faint"/><text x="396" y="44" class="t" font-size="13" font-weight="600">3 · Orchestrate</text><text x="396" y="62" class="q" font-size="11.5">Prove bounded tasks</text><text x="396" y="96" class="t" font-size="11.5">Spec-driven flow</text><text x="396" y="116" class="t" font-size="11.5">Ticket-to-PR agents</text><text x="396" y="136" class="t" font-size="11.5">First auto-merge class</text><text x="396" y="156" class="t" font-size="11.5">Risk-scored rollout</text><text x="396" y="176" class="t" font-size="11.5">On-call triage agent</text><rect x="564" y="20" width="172" height="176" rx="8" class="box"/><line x1="576" y1="74" x2="724" y2="74" class="faint"/><text x="576" y="44" class="t" font-size="13" font-weight="600">4 · AI-native</text><text x="576" y="62" class="q" font-size="11.5">Expand proven work</text><text x="576" y="96" class="t" font-size="11.5">Agents own work classes</text><text x="576" y="116" class="t" font-size="11.5">PM/design ship UI fixes</text><text x="576" y="136" class="t" font-size="11.5">Outer-loop agents</text><text x="576" y="156" class="t" font-size="11.5">Cost per PR managed</text><text x="576" y="176" class="t" font-size="11.5">Eval suite in CI</text><line x1="24" y1="218" x2="736" y2="218" class="edge"/><path d="M200 209l9 9l-9 9l-9 -9z" class="gate"/><text x="200" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 1</text><text x="200" y="264" class="q" font-size="11.5" text-anchor="middle">Baselines set</text><text x="200" y="280" class="q" font-size="11.5" text-anchor="middle">Stance published</text><path d="M380 209l9 9l-9 9l-9 -9z" class="gate"/><text x="380" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 2</text><text x="380" y="264" class="q" font-size="11.5" text-anchor="middle">Context connected</text><text x="380" y="280" class="q" font-size="11.5" text-anchor="middle">Review time improves</text><path d="M560 209l9 9l-9 9l-9 -9z" class="gate"/><text x="560" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 3</text><text x="560" y="264" class="q" font-size="11.5" text-anchor="middle">Deploy time improves</text><text x="560" y="280" class="q" font-size="11.5" text-anchor="middle">Change-fail flat</text><path d="M736 209l9 9l-9 9l-9 -9z" class="gate"/><text x="736" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="end">Gate 4</text><text x="736" y="264" class="q" font-size="11.5" text-anchor="end">Reliable work classes</text><text x="736" y="280" class="q" font-size="11.5" text-anchor="end">Evals and cost managed</text><rect x="24" y="298" width="712" height="32" rx="8" class="band"/><text x="380" y="318" class="t" font-size="12.5" text-anchor="middle">Every week: continue, slow down or hold, based on quality and productivity</text></svg></div>
-          <figcaption><strong>Start with foundations; every phase ends at a measured gate.</strong> Illustrative sequence; set timing and thresholds from your baseline.</figcaption>
-        </figure><div class="gate-grid"><div><span class="gate-dot go"></span><strong>Continue</strong><p>Flow improves. Quality holds.</p></div><div><span class="gate-dot slow"></span><strong>Slow down</strong><p>A target slips. Investigate.</p></div><div><span class="gate-dot hold"></span><strong>Hold</strong><p>A guardrail breaks. Fix first.</p></div></div>
-</section>
+        </figure>
+        <p>Everything in the top-left quadrant can be bought or configured, so the first 90 days cost habit change rather than engineering.</p>
+        <figure>
+          <div class="frame"><svg viewBox="0 0 760 342" role="img" aria-labelledby="road-title" class="diagram"><title id="road-title">Start with foundations; every phase ends at a measured gate</title><rect x="24" y="20" width="172" height="176" rx="8" class="hot"/><line x1="36" y1="74" x2="184" y2="74" class="faint"/><text x="36" y="44" class="t" font-size="13" font-weight="600">1 &#183; Foundations</text><text x="36" y="62" class="q" font-size="11.5">Days 0&#8211;30</text><text x="36" y="96" class="t" font-size="11.5">AI stance published</text><text x="36" y="116" class="t" font-size="11.5">Tool access for all</text><text x="36" y="136" class="t" font-size="11.5">Baselines measured</text><text x="36" y="156" class="t" font-size="11.5">MCP only via gateway</text><text x="36" y="176" class="t" font-size="11.5">A champion per team</text><rect x="204" y="20" width="172" height="176" rx="8" class="box"/><line x1="216" y1="74" x2="364" y2="74" class="faint"/><text x="216" y="44" class="t" font-size="13" font-weight="600">2 &#183; Connect</text><text x="216" y="62" class="q" font-size="11.5">Days 31&#8211;90</text><text x="216" y="96" class="t" font-size="11.5">Agent config per repo</text><text x="216" y="116" class="t" font-size="11.5">Team plugin shipped</text><text x="216" y="136" class="t" font-size="11.5">Tier-1 MCP servers live</text><text x="216" y="156" class="t" font-size="11.5">AI review on all PRs</text><text x="216" y="176" class="t" font-size="11.5">Build-fix agent live</text><rect x="384" y="20" width="172" height="176" rx="8" class="box"/><line x1="396" y1="74" x2="544" y2="74" class="faint"/><text x="396" y="44" class="t" font-size="13" font-weight="600">3 &#183; Orchestrate</text><text x="396" y="62" class="q" font-size="11.5">Days 91&#8211;180</text><text x="396" y="96" class="t" font-size="11.5">Spec-driven flow</text><text x="396" y="116" class="t" font-size="11.5">Ticket-to-PR agents</text><text x="396" y="136" class="t" font-size="11.5">First auto-merge class</text><text x="396" y="156" class="t" font-size="11.5">Risk-scored rollout</text><text x="396" y="176" class="t" font-size="11.5">On-call triage agent</text><rect x="564" y="20" width="172" height="176" rx="8" class="box"/><line x1="576" y1="74" x2="724" y2="74" class="faint"/><text x="576" y="44" class="t" font-size="13" font-weight="600">4 &#183; AI-native</text><text x="576" y="62" class="q" font-size="11.5">Days 181&#8211;365</text><text x="576" y="96" class="t" font-size="11.5">Agents own work classes</text><text x="576" y="116" class="t" font-size="11.5">PM/design ship UI fixes</text><text x="576" y="136" class="t" font-size="11.5">Outer-loop agents</text><text x="576" y="156" class="t" font-size="11.5">Cost per PR managed</text><text x="576" y="176" class="t" font-size="11.5">Eval suite in CI</text><line x1="24" y1="218" x2="736" y2="218" class="edge"/><path d="M200 209l9 9l-9 9l-9 -9z" class="gate"/><text x="200" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 1 &#183; day 30</text><text x="200" y="264" class="q" font-size="11.5" text-anchor="middle">Baselines set</text><text x="200" y="280" class="q" font-size="11.5" text-anchor="middle">Stance published</text><path d="M380 209l9 9l-9 9l-9 -9z" class="gate"/><text x="380" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 2 &#183; day 90</text><text x="380" y="264" class="q" font-size="11.5" text-anchor="middle">All teams at L2</text><text x="380" y="280" class="q" font-size="11.5" text-anchor="middle">Review time &#8722;30%</text><path d="M560 209l9 9l-9 9l-9 -9z" class="gate"/><text x="560" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="middle">Gate 3 &#183; day 180</text><text x="560" y="264" class="q" font-size="11.5" text-anchor="middle">Deploy time &#8722;30%</text><text x="560" y="280" class="q" font-size="11.5" text-anchor="middle">Change-fail flat</text><path d="M736 209l9 9l-9 9l-9 -9z" class="gate"/><text x="736" y="246" class="t" font-size="11.5" font-weight="600" text-anchor="end">Gate 4 &#183; day 365</text><text x="736" y="264" class="q" font-size="11.5" text-anchor="end">AI code share 50%+</text><text x="736" y="280" class="q" font-size="11.5" text-anchor="end">20% at L4</text><rect x="24" y="298" width="712" height="32" rx="8" class="band"/><text x="380" y="318" class="t" font-size="12.5" text-anchor="middle">Every week: continue, slow down or hold, based on quality and productivity</text></svg></div>
+          <figcaption><strong>Start with foundations; every phase ends at a measured gate.</strong> Proposed 12-month roadmap; phases are not drawn to scale.</figcaption>
+        </figure>
+        <p>Confirm the gate targets against your baselines at Gate 1. The weekly check keeps the ramp honest: all targets met means continue, one miss means slow down, and a blocker or two misses means hold.</p>
+      </section>
 
-  <section id="measurement"><p class="section-index">08 / Measurement</p><h2>Measurement</h2>
-  <p>Adoption tells you whether people are trying a tool. It does not tell you whether customers receive useful changes sooner. Measure at the level of the team that delivers together, and compare work of similar scope.</p>
-  <ul>
-    <li><strong>Adoption and proficiency:</strong> active use, agent-assisted work, and the workflows people can complete reliably. Treat these as inputs and learning signals.</li>
-    <li><strong>Flow:</strong> lead time split into preparation, coding, review, and deployment; queue time; and human intervention. These reveal where the constraint moved.</li>
-    <li><strong>Stability:</strong> change-failure rate, recovery time, rework, incidents, and PR size. Pair these guardrails with every speed goal.</li>
-    <li><strong>Economics:</strong> agent and model spend per completed change, plus the human effort needed to review, repair, and operate it.</li>
-    <li><strong>Experience:</strong> whether builders trust the workflow and would choose it for their next task. Use feedback to investigate friction, alongside delivery evidence.</li>
-  </ul>
-  <p>Avoid rewarding lines generated or AI-authored code share on their own. Both can rise while useful delivery gets worse. Use representative task evaluations and delivery telemetry to test whether perceived gains survive contact with the full workflow.</p>
-  
-<div class="visual-table" role="region" aria-label="Measurement table" tabindex="0"><table>
+<div class="decision-gates" aria-label="Rollout decisions"><div><span class="decision-dot go"></span><strong>Continue</strong><p>Targets met. Quality holds.</p></div><div><span class="decision-dot slow"></span><strong>Slow down</strong><p>One miss. Investigate before expanding.</p></div><div><span class="decision-dot hold"></span><strong>Hold</strong><p>A blocker or repeated misses. Fix first.</p></div></div>
+      <section id="measurement" aria-labelledby="h-measurement">
+        <h2 id="h-measurement">Measurement</h2>
+        <p>Measure flow end to end and pair every speed metric with a quality guardrail. Adoption is an input, never the goal.</p>
+        <p>Self-reports mislead. In METR&rsquo;s early-2025 randomized trial, experienced developers felt 20% faster with AI but were 19% slower (<a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/" target="_blank" rel="noopener">METR 2025</a>). METR&rsquo;s 2026 follow-up says newer agentic tools likely do speed developers up, and still calls self-reported gains unreliable (<a href="https://metr.org/blog/2026-02-24-uplift-update/" target="_blank" rel="noopener">METR 2026</a>).</p>
+        <div class="scroll">
+          <table>
             <thead><tr><th>Layer</th><th>Metric</th><th>Use it as</th></tr></thead>
             <tbody>
               <tr><td>Adoption</td><td>Weekly active AI users; share of PRs AI-assisted; share of AI-authored commits; MCP tool calls</td><td>Input only, never a target on its own</td></tr>
@@ -411,22 +421,21 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
               <tr><td>Economics</td><td>AI cost per merged PR; hours saved by build and fix agents</td><td>Budget review</td></tr>
               <tr><td>Experience</td><td>Builder satisfaction; &ldquo;would you start your next feature this way?&rdquo;</td><td>Leading signal</td></tr>
             </tbody>
-          </table></div>
-</section>
+          </table>
+        </div>
+        <p>Report at the level of the teams that ship together, rather than by repo or reporting line. Faros found that aggregate numbers hide which teams AI is helping and which it is hurting.</p>
+      </section>
 
-  <section id="risks"><p class="section-index">09 / Risks</p><h2>Risks</h2>
-  <p>The most consequential failure is faster implementation feeding a system that cannot absorb it. Keep changes small, make review expectations explicit, and improve release capacity before expanding generation.</p>
-  <p>Access creates a second set of risks. Use scoped, expiring credentials, registered integrations, and sandboxed execution. Review writes that cross trust boundaries. Keep the agent’s ability to read external material separate from its authority to act on internal systems.</p>
-  <p>Context can fail quietly. An outdated runbook or ownerless instruction file can repeatedly steer agents toward the wrong result. Give agent-facing knowledge owners, review dates, and a path for correcting it after a failed task.</p>
-  <p>Process and cost need limits too. A spec-driven workflow can generate more documents than anyone can review, while parallel agents can accumulate spend without finishing work. Keep the specification proportionate to the change, retain independent checks, and review total cost against completed outcomes.</p>
-  <p>The aim is a delivery system that learns. Start with a bounded workflow, make the result inspectable, and expand when the evidence supports it. The strongest asset is the shared understanding of how to turn intent into a reliable change.</p>
-  
-<div class="visual-table" role="region" aria-label="Risks table" tabindex="0"><table>
+      <section id="risks" aria-labelledby="h-risks">
+        <h2 id="h-risks">Risks and guardrails</h2>
+        <p>The failure to plan for is not low adoption. It is faster code feeding a review queue and a release process that cannot absorb it.</p>
+        <div class="scroll">
+          <table>
             <thead><tr><th>Risk</th><th>Why it happens</th><th>Guardrail</th></tr></thead>
             <tbody>
-              <tr><td>Review becomes the bottleneck</td><td>Code generation can outpace review capacity and increase change size</td><td>PR size limits; AI first-pass review on every PR; auto-merge only for proven low-risk classes</td></tr>
-              <tr><td>Instability rises with throughput</td><td>Higher output puts more pressure on integration, testing, and rollout</td><td>Change-fail rate as a hard guardrail; progressive delivery; rehearsed rollbacks</td></tr>
-              <tr><td>MCP supply chain and credentials</td><td>Token mismanagement, tool poisoning, and unregistered servers</td><td>Gateway only; no personal tokens; pinned, registered servers; sandboxed execution</td></tr>
+              <tr><td>Review becomes the bottleneck</td><td>Faros 2026 telemetry: median time in PR review up 441%, PR size up 51%, and 31% more PRs merged with no review</td><td>PR size limits; AI first-pass review on every PR; auto-merge only for proven low-risk classes</td></tr>
+              <tr><td>Instability rises with throughput</td><td>DORA 2025: AI adoption raises throughput but still lowers delivery stability. Faros reports incidents per PR up 243%</td><td>Change-fail rate as a hard guardrail; progressive delivery; rehearsed rollbacks</td></tr>
+              <tr><td>MCP supply chain and credentials</td><td>OWASP MCP Top 10: token mismanagement, tool poisoning, shadow servers. 30+ MCP CVEs in early 2026</td><td>Gateway only; no personal tokens; pinned, registered servers; sandboxed execution</td></tr>
               <tr><td>Over-scoped agent access</td><td>Broad tokens let a prompt injection in one public issue pull private data into a public PR</td><td>Least-privilege scopes that expire; human approval on writes across trust boundaries</td></tr>
               <tr><td>Self-reported gains mislead</td><td>Developers misjudge their own speed with AI (METR)</td><td>Decide from telemetry; use surveys as a leading signal only</td></tr>
               <tr><td>Process overload</td><td>Spec-first agent flows can produce more documents than people can review</td><td>Keep independent checks and pre-merge review; cut approval steps and document volume</td></tr>
@@ -434,12 +443,14 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
               <tr><td>Cost creep</td><td>Token spend grows with parallel and background agents</td><td>AI cost per merged PR reviewed monthly; route routine tasks to cheaper models</td></tr>
               <tr><td>Optimizing only the code step</td><td>The constraint moves to review, integration and deployment</td><td>Fund review and release work before adding more code generators</td></tr>
             </tbody>
-          </table></div>
-</section>
+          </table>
+        </div>
+      </section>
 
-  <aside class="post-sources" aria-labelledby="sources"><h2 id="sources">Sources</h2>
-  <p>Adapted from my <a href="https://yanksc.github.io/ai-native-sdlc-playbook/">AI-Native SDLC Playbook</a>. This edition generalizes the audience, staffing, targets, and rollout schedule. The frameworks are proposed operating guidance, not universal benchmarks.</p>
-<ul class="sources">
+      <section id="sources" aria-labelledby="h-sources">
+        <h2 id="h-sources">Sources</h2>
+        <p class="note">All sources are public. Vendor-published research is marked as such.</p>
+        <ul class="sources">
           <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model" target="_blank" rel="noopener">Introducing the DORA AI Capabilities Model</a>, Google Cloud, September 2025</li>
           <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report" target="_blank" rel="noopener">Announcing the 2025 DORA Report: State of AI-Assisted Software Development</a>, Google Cloud, September 2025</li>
           <li><a href="https://www.faros.ai/blog/key-takeaways-from-the-dora-report-2025" target="_blank" rel="noopener">Key takeaways from the DORA Report 2025</a>, Faros (vendor), updated with its 2026 telemetry</li>
@@ -447,14 +458,163 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
           <li><a href="https://metr.org/blog/2026-02-24-uplift-update/" target="_blank" rel="noopener">We are changing our developer productivity experiment design</a>, METR, February 2026</li>
           <li><a href="https://cycode.com/blog/owasp-mcp-top-10/" target="_blank" rel="noopener">OWASP MCP Top 10: a guide to securing Model Context Protocol in 2026</a>, Cycode (vendor summary), June 2026</li>
         </ul>
-  <p>A personal perspective, not affiliated with or endorsed by any employer. Adapted text licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
-  </aside>
-</div>
-</article>
+      </section>
+    </main>
+  </div>
 
-</main>
-<footer class="wrap"><a href="../index.html#blog">&larr; All posts</a> · <a href="../index.html#work">Portfolio</a></footer>
-<script src="agenda.js" defer></script>
-<script src="playbook.js" defer></script>
+  <footer>
+    <p><a href="../index.html#blog">&larr; All posts</a> &middot; Adapted from the <a href="https://yanksc.github.io/ai-native-sdlc-playbook/">original playbook</a>.</p>
+    <p>Maintained by <a href="https://github.com/yanksc" target="_blank" rel="noopener">@yanksc</a>. Source and issues at <a href="https://github.com/yanksc/ai-native-sdlc-playbook" target="_blank" rel="noopener">github.com/yanksc/ai-native-sdlc-playbook</a>.</p>
+    <p>A personal project, not affiliated with or endorsed by any employer. Text licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "portfolio-sdlc-priority-v1";
+  var FIELDS = [
+    { key: "reach", step: "1", min: "0" },
+    { key: "hours", step: "0.1", min: "0" },
+    { key: "weight", step: "0.05", min: "0", max: "1" },
+    { key: "conf", step: "0.1", min: "0", max: "1" },
+    { key: "effort", step: "0.5", min: "0.5" },
+    { key: "risk", step: "1", min: "1", max: "3" }
+  ];
+  var LABELS = { reach: "Reach per week", hours: "Hours saved per use", weight: "Bottleneck weight", conf: "Confidence", effort: "Effort in person-weeks", risk: "Risk" };
+  var EXAMPLES = [
+    { name: "AI PR review on every repo", reach: 300, hours: 0.3, weight: 0.25, conf: 1, effort: 1, risk: 1 },
+    { name: "Build-failure remediation agent", reach: 120, hours: 0.5, weight: 0.15, conf: 1, effort: 2, risk: 2 },
+    { name: "On-call triage agent", reach: 30, hours: 1, weight: 0.3, conf: 0.8, effort: 3, risk: 1 },
+    { name: "Ticket-to-PR background agent", reach: 40, hours: 2, weight: 0.1, conf: 0.8, effort: 4, risk: 2 },
+    { name: "Custom MCP server for feature flags", reach: 50, hours: 0.2, weight: 0.1, conf: 0.5, effort: 3, risk: 2 },
+    { name: "Self-hosted agent runtime", reach: 20, hours: 1, weight: 0.1, conf: 0.5, effort: 12, risk: 2 }
+  ];
+
+  function clone(rows) { return rows.map(function (r) { return Object.assign({}, r); }); }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      }
+    } catch (e) { /* storage unavailable */ }
+    return clone(EXAMPLES);
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(rows)); } catch (e) { /* storage unavailable */ } }
+
+  function score(r) {
+    var num = (+r.reach || 0) * (+r.hours || 0) * (+r.weight || 0) * (+r.conf || 0);
+    var den = (+r.effort || 0) * (+r.risk || 0);
+    return den > 0 ? num / den : 0;
+  }
+  function fmt(n) { return n >= 100 ? n.toFixed(0) : n >= 10 ? n.toFixed(1) : n.toFixed(2); }
+
+  var rows = load();
+  var body = document.getElementById("calc-body");
+  if (!body) return;
+
+  function render() {
+    body.textContent = "";
+    rows.forEach(function (r, i) {
+      var tr = document.createElement("tr");
+      tr.dataset.index = String(i);
+      var rank = document.createElement("td");
+      rank.className = "rank";
+      tr.appendChild(rank);
+      var nameTd = document.createElement("td");
+      var name = document.createElement("input");
+      name.type = "text"; name.className = "name"; name.id = "calc-" + i + "-name";
+      name.value = r.name; name.dataset.field = "name";
+      name.setAttribute("aria-label", "Candidate name");
+      nameTd.appendChild(name); tr.appendChild(nameTd);
+      FIELDS.forEach(function (f) {
+        var td = document.createElement("td");
+        var input = document.createElement("input");
+        input.type = "number"; input.inputMode = "decimal";
+        input.id = "calc-" + i + "-" + f.key; input.dataset.field = f.key;
+        input.step = f.step; input.min = f.min; if (f.max) input.max = f.max;
+        input.value = r[f.key];
+        input.setAttribute("aria-label", LABELS[f.key] + " for " + (r.name || "candidate"));
+        td.appendChild(input); tr.appendChild(td);
+      });
+      var sc = document.createElement("td");
+      sc.className = "score";
+      sc.innerHTML = '<div class="score-val"></div><div class="meter" aria-hidden="true"><span></span></div>';
+      tr.appendChild(sc);
+      var rm = document.createElement("td");
+      var btn = document.createElement("button");
+      btn.type = "button"; btn.className = "remove"; btn.dataset.remove = String(i);
+      btn.setAttribute("aria-label", "Remove " + (r.name || "candidate"));
+      btn.textContent = "×";
+      rm.appendChild(btn); tr.appendChild(rm);
+      body.appendChild(tr);
+    });
+    update();
+  }
+
+  function update() {
+    var scores = rows.map(score);
+    var max = Math.max.apply(null, scores.concat([0]));
+    var order = scores.map(function (s, i) { return [s, i]; }).sort(function (a, b) { return b[0] - a[0]; });
+    var ranks = {};
+    order.forEach(function (pair, pos) { ranks[pair[1]] = pos + 1; });
+    Array.prototype.forEach.call(body.children, function (tr) {
+      var i = +tr.dataset.index;
+      tr.querySelector(".rank").textContent = String(ranks[i]);
+      tr.querySelector(".score-val").textContent = fmt(scores[i]);
+      tr.querySelector(".meter span").style.width = (max > 0 ? (scores[i] / max) * 100 : 0) + "%";
+    });
+  }
+
+  body.addEventListener("input", function (e) {
+    var t = e.target;
+    var tr = t.closest("tr");
+    if (!tr || !t.dataset.field) return;
+    var r = rows[+tr.dataset.index];
+    r[t.dataset.field] = t.dataset.field === "name" ? t.value : (t.value === "" ? 0 : +t.value);
+    save();
+    update();
+  });
+  body.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-remove]");
+    if (!b) return;
+    rows.splice(+b.dataset.remove, 1);
+    save(); render();
+  });
+  document.getElementById("calc-add").addEventListener("click", function () {
+    rows.push({ name: "New candidate", reach: 10, hours: 0.5, weight: 0.2, conf: 0.5, effort: 2, risk: 1 });
+    save(); render();
+    var last = document.getElementById("calc-" + (rows.length - 1) + "-name");
+    if (last) { last.focus(); last.select(); }
+  });
+  document.getElementById("calc-sort").addEventListener("click", function () {
+    rows.sort(function (a, b) { return score(b) - score(a); });
+    save(); render();
+  });
+  document.getElementById("calc-reset").addEventListener("click", function () {
+    rows = clone(EXAMPLES);
+    save(); render();
+  });
+  render();
+
+  /* Keep the original rail style while tracking the reading position. */
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var scheduled = false;
+  function highlight() {
+    scheduled = false;
+    var active = 0;
+    sections.forEach(function(section,i){ if(section && section.getBoundingClientRect().top <= 160) active = i; });
+    if(window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) active = links.length - 1;
+    links.forEach(function(a,i){ if(i === active) a.setAttribute('aria-current','true'); else a.removeAttribute('aria-current'); });
+  }
+  window.addEventListener('scroll',function(){ if(!scheduled){ scheduled = true; requestAnimationFrame(highlight); } },{passive:true});
+  window.addEventListener('resize',highlight);
+  highlight();
+})();
+</script>
+
 </body>
 </html>
