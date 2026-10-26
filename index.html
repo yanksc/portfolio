@@ -366,6 +366,14 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
       </a></div></section><section role="tabpanel" class="panel wrap" id="panel-blog" aria-labelledby="tab-blog" hidden>
   <p class="lede">Notes on building AI platforms and the engineering systems around them.</p>
   <div class="domaincards">
+    <a class="dcard" href="blog/build-vs-buy.html">
+      <div>
+        <p class="mono" style="font-size:.7rem;margin:0 0 10px;color:var(--faint)">October 26, 2026 · Platform strategy</p>
+        <h3>Build vs. buy — categories I've evaluated</h3>
+        <p>My perspective on Kubernetes cost optimization, managed agent runtimes, ephemeral sandboxes, and observability.</p>
+      </div>
+      <span class="arrow" aria-hidden="true">&rarr;</span>
+    </a>
     <a class="dcard" href="blog/ai-native-sdlc.html">
       <div>
         <p class="mono" style="font-size:.7rem;margin:0 0 10px;color:var(--faint)">October 26, 2026 · Engineering systems</p>
@@ -394,12 +402,7 @@ footer{border-top:1px solid var(--rule);padding:28px 0 48px;font-family:'IBM Ple
         <div><h3>Data &amp; Analytics</h3><p>The measurement layer — pricing, adoption, reliability, and cost.</p></div>
         <span class="arrow">&rarr;</span>
       </a></div>
-    <h2>Build vs. buy — categories I've evaluated</h2>
-    <p class="note">Part of a platform PM's job is knowing when not to build. These are categories I've evaluated seriously, with the positioning I formed at the time. Reasonable people disagree, and these markets move fast.</p>
-    <div class="scroller"><table>
-      <thead><tr><th>Product</th><th>Category</th><th>Positioning as I read it</th></tr></thead>
-      <tbody><tr><td>ScaleOps</td><td>K8s cost optimization</td><td>Strong automated right-sizing. Optimizes toward observed steady state, which is the right default for most fleets.</td></tr><tr><td>Cast.ai</td><td>K8s cost optimization</td><td>Broad automation and good bin-packing. Best fit where infrastructure policy can be delegated wholesale.</td></tr><tr><td>Zesty</td><td>K8s cost optimization</td><td>Commitment and capacity management angle. Value concentrates on the purchasing side rather than workload shape.</td></tr><tr><td>AWS AgentCore</td><td>Managed agent runtime</td><td>Managed runtime with the depth of the AWS control plane behind it. Strongest where you're already all-in on AWS identity.</td></tr><tr><td>Anthropic Agents API</td><td>Managed agent runtime</td><td>Cleanest developer ergonomics of the group. Optimizes for time-to-first-agent over infrastructure control.</td></tr><tr><td>Fly.io Sprites</td><td>Ephemeral sandboxes</td><td>Fast, lightweight isolated execution. Attractive when the unit of work is short-lived and stateless.</td></tr><tr><td>Vercel Sandbox</td><td>Ephemeral sandboxes</td><td>Tight integration with an existing deploy workflow. Compelling if your app already lives there.</td></tr><tr><td>Datadog</td><td>Observability / AIOps</td><td>Deepest signal coverage in the category. The question is usually cost curve and data gravity, not capability.</td></tr></tbody>
-    </table></div></section><section role="tabpanel" class="panel wrap" id="panel-agents" aria-labelledby="tab-agents" hidden>
+</section><section role="tabpanel" class="panel wrap" id="panel-agents" aria-labelledby="tab-agents" hidden>
     <p class="lede">This page is generated from a single structured markdown file. So is my resume PDF. So is the context an LLM gets when it's asked about my work — I built a local MCP server over the same source so an agent can query it directly rather than scraping a webpage. The point isn't the novelty. It's that a career, like a product, benefits from having one source of truth and a machine-readable interface.</p>
     <h2>The source file</h2>
     <div class="callout">

@@ -25,3 +25,10 @@
 .post-sources p{font-size:.9rem;color:var(--muted)}
 .post-sources h2{font-size:1.2rem}
 @media(max-width:700px){.post{padding-top:76px}.post-toc{padding:18px}.post-deck{font-size:1.05rem}}
+
+.post-wide{max-width:100%}
+.post-comparison table{min-width:640px}
+.post-comparison th{line-height:1.5}
+.post-comparison td{line-height:1.75}
+.post-comparison td:first-child{width:23%}
+.post-comparison td:nth-child(2){width:23%}
